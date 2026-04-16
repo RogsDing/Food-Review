@@ -1,0 +1,75 @@
+<view class="container">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-container">
+      <input class="search-input" placeholder="搜索商家、美食" bindinput="onSearchInput" bindconfirm="search" value="{{searchKeyword}}" focus="{{true}}" />
+      <text class="search-icon">🔍</text>
+      <text wx:if="{{searchKeyword}}" class="search-clear" bindtap="clearSearch">×</text>
+    </view>
+    <button class="cancel-btn" bindtap="cancelSearch">取消</button>
+  </view>
+  
+  <!-- 搜索历史 -->
+  <view class="search-history" wx:if="{{searchHistory.length > 0 && !showResults}}">
+    <view class="history-header">
+      <text class="history-title">搜索历史</text>
+      <text class="clear-history" bindtap="clearHistory">清除</text>
+    </view>
+    <view class="history-list">
+      <text wx:for="{{searchHistory}}" wx:key="*this" class="history-item" bindtap="searchWithHistory" data-keyword="{{item}}">{{item}}</text>
+    </view>
+  </view>
+  
+  <!-- 搜索建议 -->
+  <view class="search-suggestions" wx:if="{{searchSuggestions.length > 0 && !showResults}}">
+    <view class="suggestion-header">
+      <text class="suggestion-title">搜索建议</text>
+    </view>
+    <view class="suggestion-list">
+      <text wx:for="{{searchSuggestions}}" wx:key="*this" class="suggestion-item" bindtap="searchWithSuggestion" data-keyword="{{item}}">{{item}}</text>
+    </view>
+  </view>
+  
+  <!-- 搜索结果 -->
+  <view class="search-results" wx:if="{{showResults}}">
+    <view class="results-header">
+      <text class="results-title">搜索结果</text>
+      <text class="results-count">{{searchResults.length}}条结果</text>
+    </view>
+    
+    <block wx:for="{{searchResults}}" wx:key="_id">
+      <view class="shop-card" bindtap="goToDetail" data-id="{{item._id}}">
+        <view class="shop-image" wx:if="{{item.imageFileIDs && item.imageFileIDs.length > 0}}">
+          <image src="{{item.imageFileIDs[0]}}" mode="aspectFill" />
+        </view>
+        <view class="shop-info">
+          <view class="shop-header">
+            <text class="shop-name">{{item.shopName}}</text>
+            <view class="shop-rating">
+              <text>{{item.rating}}</text>
+              <text class="star">★</text>
+            </view>
+          </view>
+          <view class="shop-meta">
+            <text>人均 ¥{{item.averagePrice || 0}}</text>
+            <text>月售{{item.monthlySales || 0}}</text>
+            <text>{{item.area}}</text>
+          </view>
+          <view class="shop-tags">
+            <text class="shop-tag">高性价比</text>
+            <text class="shop-tag">适合二刷</text>
+            <text class="shop-tag">{{item.category || '美食'}}</text>
+          </view>
+          <view class="shop-bottom">
+            <text class="shop-address">{{item.address || item.area}}</text>
+            <text class="shop-distance">{{item.distance || '1.2km'}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+    
+    <view wx:if="{{searchResults.length === 0}}" class="empty-state">
+      <text class="empty-state-text">未找到相关结果</text>
+    </view>
+  </view>
+</view>

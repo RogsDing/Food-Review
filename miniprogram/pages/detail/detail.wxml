@@ -1,0 +1,28 @@
+<view class="container">
+  <view class="detail-header">
+    <text class="detail-shop-name">{{review.shopName}}</text>
+    <view class="detail-meta">
+      <view class="review-rating">
+        <view wx:for="{{5}}" wx:key="*this" 
+              class="star {{index < review.rating ? 'active' : ''}}">
+        </view>
+      </view>
+      <text>{{review.area}}</text>
+      <text>{{review.diningTime}}</text>
+    </view>
+  </view>
+  
+  <view class="detail-content">
+    <text class="detail-text">{{review.content}}</text>
+    <view class="detail-images" wx:if="{{review.imageFileIDs && review.imageFileIDs.length > 0}}">
+      <view wx:for="{{review.imageFileIDs}}" wx:key="*this" class="detail-image">
+        <image src="{{item}}" mode="aspectFill" bindtap="previewImage" data-index="{{index}}" />
+      </view>
+    </view>
+  </view>
+  
+  <view class="detail-actions">
+    <button class="action-btn" bindtap="deleteReview">删除</button>
+    <button class="action-btn primary" bindtap="editReview">编辑</button>
+  </view>
+</view>

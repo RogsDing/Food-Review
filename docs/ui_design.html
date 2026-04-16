@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>美食点评小程序原型</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+            background-color: #fff;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 顶部导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 44px;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+        
+        .navbar-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .navbar-btn {
+            font-size: 16px;
+            color: #ff6b00;
+        }
+        
+        /* 底部标签栏 */
+        .tabbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+        
+        .tabbar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .tabbar-item.active {
+            color: #ff6b00;
+        }
+        
+        .tabbar-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+            background-color: #ddd;
+            border-radius: 4px;
+        }
+        
+        .tabbar-item.active .tabbar-icon {
+            background-color: #ff6b00;
+        }
+        
+        /* 页面内容 */
+        .page {
+            display: none;
+            padding-top: 44px;
+            padding-bottom: 50px;
+            min-height: 100vh;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        /* 首页 */
+        .filter-bar {
+            padding: 12px 16px;
+            background-color: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .filter-item {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .filter-item::after {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-right: 1px solid #999;
+            border-bottom: 1px solid #999;
+            transform: rotate(45deg);
+            margin-left: 4px;
+        }
+        
+        .search-bar {
+            padding: 12px 16px;
+            background-color: #f5f5f5;
+        }
+        
+        .search-input {
+            width: 100%;
+            height: 36px;
+            background-color: #fff;
+            border-radius: 18px;
+            border: none;
+            padding: 0 16px;
+            font-size: 14px;
+        }
+        
+        .review-card {
+            background-color: #fff;
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .review-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .review-shop-name {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .review-rating {
+            display: flex;
+            align-items: center;
+        }
+        
+        .star {
+            width: 16px;
+            height: 16px;
+            margin-left: 4px;
+        }
+        
+        .star.active {
+            background-color: #ffd700;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+        
+        .review-meta {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+        
+        .review-content {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .review-images {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .review-image {
+            width: 80px;
+            height: 80px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        
+        /* 发布点评页 */
+        .form-section {
+            background-color: #fff;
+            margin-bottom: 12px;
+            padding: 16px;
+        }
+        
+        .form-item {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .form-input {
+            width: 100%;
+            height: 44px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 0 12px;
+            font-size: 14px;
+        }
+        
+        .form-textarea {
+            width: 100%;
+            min-height: 120px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 14px;
+            resize: none;
+        }
+        
+        .rating-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .rating-stars {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .rating-star {
+            width: 24px;
+            height: 24px;
+            background-color: #e0e0e0;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+        
+        .rating-star.active {
+            background-color: #ffd700;
+        }
+        
+        .image-upload {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .upload-item {
+            width: 80px;
+            height: 80px;
+            border: 1px dashed #e0e0e0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #999;
+        }
+        
+        .submit-btn {
+            position: fixed;
+            bottom: 60px;
+            left: 16px;
+            right: 16px;
+            height: 44px;
+            background-color: #ff6b00;
+            color: #fff;
+            border: none;
+            border-radius: 22px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        /* 点评详情页 */
+        .detail-header {
+            background-color: #fff;
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .detail-shop-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .detail-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        
+        .detail-content {
+            background-color: #fff;
+            padding: 16px;
+            margin-top: 12px;
+        }
+        
+        .detail-text {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        
+        .detail-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .detail-image {
+            width: calc(33.333% - 5.333px);
+            aspect-ratio: 1;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        
+        .detail-actions {
+            position: fixed;
+            bottom: 60px;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            padding: 12px 16px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            height: 36px;
+            border: 1px solid #e0e0e0;
+            border-radius: 18px;
+            font-size: 14px;
+            background-color: #fff;
+        }
+        
+        .action-btn.primary {
+            background-color: #ff6b00;
+            color: #fff;
+            border-color: #ff6b00;
+        }
+        
+        /* 个人中心 */
+        .user-info {
+            background-color: #ff6b00;
+            color: #fff;
+            padding: 24px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .user-details {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .user-meta {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .menu-list {
+            background-color: #fff;
+            margin-top: 12px;
+        }
+        
+        .menu-item {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .menu-icon {
+            width: 24px;
+            height: 24px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            margin-right: 12px;
+        }
+        
+        .menu-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .menu-text {
+            font-size: 16px;
+        }
+        
+        .menu-arrow {
+            width: 8px;
+            height: 8px;
+            border-right: 1px solid #999;
+            border-bottom: 1px solid #999;
+            transform: rotate(-45deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <div class="navbar">
+            <div class="navbar-title">美食点评</div>
+            <div class="navbar-btn" id="addReviewBtn">发布</div>
+        </div>
+        
+        <!-- 首页 -->
+        <div class="page active" id="homePage">
+            <!-- 筛选栏 -->
+            <div class="filter-bar">
+                <div class="filter-item">评分排序</div>
+                <div class="filter-item">地区筛选</div>
+            </div>
+            
+            <!-- 搜索栏 -->
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="搜索店铺名称或关键词">
+            </div>
+            
+            <!-- 点评列表 -->
+            <div class="review-list">
+                <!-- 点评卡片1 -->
+                <div class="review-card" onclick="showDetailPage()">
+                    <div class="review-header">
+                        <div class="review-shop-name">海底捞火锅</div>
+                        <div class="review-rating">
+                            <div class="star active"></div>
+                            <div class="star active"></div>
+                            <div class="star active"></div>
+                            <div class="star active"></div>
+                            <div class="star active"></div>
+                        </div>
+                    </div>
+                    <div class="review-meta">
+                        <span>朝阳区</span>
+                        <span style="margin: 0 8px;">|</span>
+                        <span>2026-04-10</span>
+                    </div>
+                    <div class="review-content">服务非常好，菜品新鲜，环境舒适，推荐大家来尝试！</div>
+                    <div class="review-images">
+                        <div class="review-image"></div>
+                        <div class="review-image"></div>
+                        <div class="review-image"></div>
+                    </div>
+                </div>
+                
+                <!-- 点评卡片2 -->
+                <div class="review-card" onclick="showDetailPage()">
+                    <div class="review-header">
+                        <div class="review-shop-name">西贝莜面村</div>
+                        <div class="review-rating">
+                            <div class="star active"></div>
+                            <div class="star active"></div>
+                            <div class="star active"></div>
+                            <div class="star active"></div>
+                            <div class="star"></div>
+                        </div>
+                    </div>
+                    <div class="review-meta">
+                        <span>海淀区</span>
+                        <span style="margin: 0 8px;">|</span>
+                        <span>2026-04-08</span>
+                    </div>
+                    <div class="review-content">莜面很正宗，菜量足，价格实惠，适合家庭聚餐。</div>
+                    <div class="review-images">
+                        <div class="review-image"></div>
+                        <div class="review-image"></div>
+                    </div>
+                </div>
+                
+                <!-- 点评卡片3 -->
+                <div class="review-card" onclick="showDetailPage()">
+                    <div class="review-header">
+                        <div class="review-shop-name">星巴克咖啡</div>
+                        <div class="review-rating">
+                            <div class="star active"></div>
+                            <div class="star active"></div>
+                            <div class="star active"></div>
+                            <div class="star"></div>
+                            <div class="star"></div>
+                        </div>
+                    </div>
+                    <div class="review-meta">
+                        <span>东城区</span>
+                        <span style="margin: 0 8px;">|</span>
+                        <span>2026-04-05</span>
+                    </div>
+                    <div class="review-content">环境不错，适合办公，咖啡味道中规中矩。</div>
+                    <div class="review-images">
+                        <div class="review-image"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 发布点评页 -->
+        <div class="page" id="publishPage">
+            <div class="form-section">
+                <div class="form-item">
+                    <label class="form-label">店铺名称</label>
+                    <input type="text" class="form-input" placeholder="请输入店铺名称">
+                </div>
+                <div class="form-item">
+                    <label class="form-label">地区</label>
+                    <input type="text" class="form-input" placeholder="请输入地区">
+                </div>
+                <div class="form-item">
+                    <label class="form-label">用餐时间</label>
+                    <input type="text" class="form-input" placeholder="请选择用餐时间">
+                </div>
+                <div class="form-item">
+                    <label class="form-label">评分</label>
+                    <div class="rating-container">
+                        <div class="rating-stars">
+                            <div class="rating-star active"></div>
+                            <div class="rating-star active"></div>
+                            <div class="rating-star active"></div>
+                            <div class="rating-star"></div>
+                            <div class="rating-star"></div>
+                        </div>
+                        <span>3星</span>
+                    </div>
+                </div>
+                <div class="form-item">
+                    <label class="form-label">评价内容</label>
+                    <textarea class="form-textarea" placeholder="请输入您的评价"></textarea>
+                </div>
+                <div class="form-item">
+                    <label class="form-label">添加图片</label>
+                    <div class="image-upload">
+                        <div class="upload-item">+</div>
+                        <div class="review-image"></div>
+                        <div class="review-image"></div>
+                    </div>
+                </div>
+            </div>
+            <button class="submit-btn" onclick="showHomePage()">提交点评</button>
+        </div>
+        
+        <!-- 点评详情页 -->
+        <div class="page" id="detailPage">
+            <div class="detail-header">
+                <div class="detail-shop-name">海底捞火锅</div>
+                <div class="detail-meta">
+                    <div class="review-rating">
+                        <div class="star active"></div>
+                        <div class="star active"></div>
+                        <div class="star active"></div>
+                        <div class="star active"></div>
+                        <div class="star active"></div>
+                    </div>
+                    <span>朝阳区</span>
+                    <span>2026-04-10</span>
+                </div>
+            </div>
+            <div class="detail-content">
+                <div class="detail-text">服务非常好，菜品新鲜，环境舒适，推荐大家来尝试！
+                    锅底选择很多，食材新鲜，服务周到，是朋友聚会的好去处。
+                    价格虽然有点小贵，但是物有所值。
+                </div>
+                <div class="detail-images">
+                    <div class="detail-image"></div>
+                    <div class="detail-image"></div>
+                    <div class="detail-image"></div>
+                    <div class="detail-image"></div>
+                    <div class="detail-image"></div>
+                    <div class="detail-image"></div>
+                </div>
+            </div>
+            <div class="detail-actions">
+                <button class="action-btn">删除</button>
+                <button class="action-btn primary">编辑</button>
+            </div>
+        </div>
+        
+        <!-- 个人中心 -->
+        <div class="page" id="profilePage">
+            <div class="user-info">
+                <div class="user-avatar">U</div>
+                <div class="user-details">
+                    <div class="user-name">用户昵称</div>
+                    <div class="user-meta">已发布 12 条点评</div>
+                </div>
+            </div>
+            <div class="menu-list">
+                <div class="menu-item">
+                    <div class="menu-left">
+                        <div class="menu-icon"></div>
+                        <div class="menu-text">我的点评</div>
+                    </div>
+                    <div class="menu-arrow"></div>
+                </div>
+                <div class="menu-item">
+                    <div class="menu-left">
+                        <div class="menu-icon"></div>
+                        <div class="menu-text">我的收藏</div>
+                    </div>
+                    <div class="menu-arrow"></div>
+                </div>
+                <div class="menu-item">
+                    <div class="menu-left">
+                        <div class="menu-icon"></div>
+                        <div class="menu-text">设置</div>
+                    </div>
+                    <div class="menu-arrow"></div>
+                </div>
+                <div class="menu-item">
+                    <div class="menu-left">
+                        <div class="menu-icon"></div>
+                        <div class="menu-text">关于我们</div>
+                    </div>
+                    <div class="menu-arrow"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部标签栏 -->
+        <div class="tabbar">
+            <div class="tabbar-item active" onclick="showHomePage()">
+                <div class="tabbar-icon"></div>
+                <div>首页</div>
+            </div>
+            <div class="tabbar-item" onclick="showPublishPage()">
+                <div class="tabbar-icon"></div>
+                <div>发布</div>
+            </div>
+            <div class="tabbar-item" onclick="showProfilePage()">
+                <div class="tabbar-icon"></div>
+                <div>我的</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 页面切换函数
+        function showHomePage() {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.tabbar-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('homePage').classList.add('active');
+            document.querySelectorAll('.tabbar-item')[0].classList.add('active');
+            document.querySelector('.navbar-title').textContent = '美食点评';
+            document.getElementById('addReviewBtn').style.display = 'block';
+        }
+        
+        function showPublishPage() {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.tabbar-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('publishPage').classList.add('active');
+            document.querySelectorAll('.tabbar-item')[1].classList.add('active');
+            document.querySelector('.navbar-title').textContent = '发布点评';
+            document.getElementById('addReviewBtn').style.display = 'none';
+        }
+        
+        function showDetailPage() {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.tabbar-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('detailPage').classList.add('active');
+            document.querySelector('.navbar-title').textContent = '点评详情';
+            document.getElementById('addReviewBtn').style.display = 'none';
+        }
+        
+        function showProfilePage() {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.tabbar-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('profilePage').classList.add('active');
+            document.querySelectorAll('.tabbar-item')[2].classList.add('active');
+            document.querySelector('.navbar-title').textContent = '个人中心';
+            document.getElementById('addReviewBtn').style.display = 'none';
+        }
+        
+        // 顶部发布按钮点击事件
+        document.getElementById('addReviewBtn').addEventListener('click', showPublishPage);
+        
+        // 评分组件交互
+        document.querySelectorAll('.rating-star').forEach((star, index) => {
+            star.addEventListener('click', function() {
+                document.querySelectorAll('.rating-star').forEach((s, i) => {
+                    if (i <= index) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

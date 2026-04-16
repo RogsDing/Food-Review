@@ -1,0 +1,35 @@
+<view class="container">
+  <view class="user-info">
+    <view class="user-avatar">
+      <image src="{{userInfo.avatarUrl || '/images/avatar.png'}}" mode="aspectFill" />
+    </view>
+    <view class="user-details">
+      <text class="user-name">{{userInfo.nickName || '用户昵称'}}</text>
+      <text class="user-meta">已发布 {{reviewCount}} 条点评</text>
+    </view>
+  </view>
+  
+  <view class="menu-list">
+    <view class="menu-item" bindtap="goToMyReviews">
+      <view class="menu-left">
+        <view class="menu-icon"></view>
+        <text class="menu-text">我的点评</text>
+      </view>
+      <view class="menu-arrow"></view>
+    </view>
+    <view class="menu-item" bindtap="goToSettings">
+      <view class="menu-left">
+        <view class="menu-icon"></view>
+        <text class="menu-text">设置</text>
+      </view>
+      <view class="menu-arrow"></view>
+    </view>
+    <view class="menu-item" bindtap="goToAbout">
+      <view class="menu-left">
+        <view class="menu-icon"></view>
+        <text class="menu-text">关于我们</text>
+      </view>
+      <view class="menu-arrow"></view>
+    </view>
+  </view>
+</view>

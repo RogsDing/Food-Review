@@ -1,0 +1,159 @@
+/**app.wxss**/
+/* 全局样式重置 */
+page, view, text, button, input, textarea, image, navigator {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+page {
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #333;
+  line-height: 1.5;
+}
+
+.container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 20rpx;
+  box-sizing: border-box;
+}
+
+/* 按钮样式 */
+button {
+  background: initial;
+  border: none;
+  outline: none;
+  font-size: 28rpx;
+  border-radius: 8rpx;
+  transition: all 0.3s ease;
+}
+
+button:focus {
+  outline: 0;
+}
+
+button::after {
+  border: none;
+}
+
+/* 主按钮样式 */
+.btn-primary {
+  background-color: #ff6b00;
+  color: white;
+  padding: 20rpx 0;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background-color: #ff8533;
+}
+
+/* 次要按钮样式 */
+.btn-secondary {
+  background-color: #f0f0f0;
+  color: #333;
+  padding: 20rpx 0;
+  font-weight: 500;
+}
+
+.btn-secondary:hover {
+  background-color: #e0e0e0;
+}
+
+/* 卡片样式 */
+.card {
+  background-color: white;
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+}
+
+/* 标题样式 */
+.title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+/* 副标题样式 */
+.subtitle {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 12rpx;
+}
+
+/* 文本样式 */
+.text {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* 分割线 */
+.divider {
+  height: 1rpx;
+  background-color: #f0f0f0;
+  margin: 20rpx 0;
+}
+
+/* 加载动画 */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40rpx 0;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 0;
+  color: #999;
+}
+
+/* 评分星星样式 */
+.star {
+  display: inline-block;
+  width: 32rpx;
+  height: 32rpx;
+  background-color: #e0e0e0;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  margin-right: 8rpx;
+  transition: all 0.3s ease;
+}
+
+.star.active {
+  background-color: #ffd700;
+  transform: scale(1.1);
+}
+
+/* 响应式布局 */
+@media (max-width: 375px) {
+  .container {
+    padding: 16rpx;
+  }
+  
+  .card {
+    padding: 20rpx;
+  }
+  
+  .title {
+    font-size: 28rpx;
+  }
+  
+  .subtitle {
+    font-size: 24rpx;
+  }
+  
+  .text {
+    font-size: 22rpx;
+  }
+}

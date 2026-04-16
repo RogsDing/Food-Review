@@ -1,0 +1,147 @@
+<view class="container">
+  <!-- 顶部搜索栏 -->
+  <view class="search-bar" bindtap="goToSearch">
+    <view class="search-input">
+      <text class="search-icon">🔍</text>
+      <text>搜索商家、美食</text>
+    </view>
+  </view>
+  
+  <!-- 分类导航 -->
+  <view class="category-nav">
+    <view class="category-list">
+      <view class="category-item" bindtap="selectCategory" data-category="美食">
+        <view class="category-icon">🍽️</view>
+        <text class="category-text">美食</text>
+      </view>
+      <view class="category-item" bindtap="selectCategory" data-category="咖啡">
+        <view class="category-icon">☕</view>
+        <text class="category-text">咖啡</text>
+      </view>
+      <view class="category-item" bindtap="selectCategory" data-category="甜点">
+        <view class="category-icon">🍰</view>
+        <text class="category-text">甜点</text>
+      </view>
+      <view class="category-item" bindtap="selectCategory" data-category="酒吧">
+        <view class="category-icon">🍺</view>
+        <text class="category-text">酒吧</text>
+      </view>
+      <view class="category-item" bindtap="selectCategory" data-category="面食">
+        <view class="category-icon">🍜</view>
+        <text class="category-text">面食</text>
+      </view>
+      <view class="category-item" bindtap="selectCategory" data-category="日料">
+        <view class="category-icon">🍱</view>
+        <text class="category-text">日料</text>
+      </view>
+      <view class="category-item" bindtap="selectCategory" data-category="西餐">
+        <view class="category-icon">🍔</view>
+        <text class="category-text">西餐</text>
+      </view>
+      <view class="category-item" bindtap="selectCategory" data-category="火锅">
+        <view class="category-icon">🥘</view>
+        <text class="category-text">火锅</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <view class="filter-item" bindtap="showSortOptions">
+      <text>综合排序</text>
+      <view class="filter-arrow"></view>
+    </view>
+    <view class="filter-item" bindtap="showAreaOptions">
+      <text>附近</text>
+      <view class="filter-arrow"></view>
+    </view>
+    <view class="filter-item" bindtap="showFilterOptions">
+      <text>筛选</text>
+      <view class="filter-arrow"></view>
+    </view>
+  </view>
+  
+  <!-- 商家列表 -->
+  <view class="shop-list">
+    <block wx:for="{{reviews}}" wx:key="_id">
+      <view class="shop-card" bindtap="goToDetail" data-id="{{item._id}}">
+        <view class="shop-image" wx:if="{{item.imageFileIDs && item.imageFileIDs.length > 0}}">
+          <image src="{{item.imageFileIDs[0]}}" mode="aspectFill" />
+        </view>
+        <view class="shop-info">
+          <view class="shop-header">
+            <text class="shop-name">{{item.shopName}}</text>
+            <view class="shop-rating">
+              <text>{{item.rating}}</text>
+              <text class="star">★</text>
+            </view>
+          </view>
+          <view class="shop-meta">
+            <text>人均 ¥{{item.averagePrice || 0}}</text>
+            <text>月售{{item.monthlySales || 0}}</text>
+            <text>{{item.area}}</text>
+          </view>
+          <view class="shop-tags">
+            <text class="shop-tag">高性价比</text>
+            <text class="shop-tag">适合二刷</text>
+            <text class="shop-tag">{{item.category || '美食'}}</text>
+          </view>
+          <view class="shop-bottom">
+            <text class="shop-address">{{item.address || item.area}}</text>
+            <text class="shop-distance">{{item.distance || '1.2km'}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+    
+    <!-- 空状态 -->
+    <view wx:if="{{reviews.length === 0}}" class="empty-state">
+      <text class="empty-state-text">暂无点评记录</text>
+      <button class="empty-btn" bindtap="goToPublish">发布第一条点评</button>
+    </view>
+    
+    <!-- 加载更多 -->
+    <view wx:if="{{reviews.length > 0}}" class="load-more">
+      <text>上拉加载更多</text>
+    </view>
+  </view>
+  
+  <!-- 排序选项 -->
+  <view wx:if="{{showSort}}" class="option-panel" bindtap="hideSortOptions">
+    <view class="option-content" catchtap="catchTap">
+      <view class="option-item" bindtap="sortByRatingDesc">
+        <text>评分从高到低</text>
+      </view>
+      <view class="option-item" bindtap="sortByRatingAsc">
+        <text>评分从低到高</text>
+      </view>
+      <view class="option-item" bindtap="sortByTimeDesc">
+        <text>时间从新到旧</text>
+      </view>
+      <view class="option-item" bindtap="sortByTimeAsc">
+        <text>时间从旧到新</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 地区选项 -->
+  <view wx:if="{{showArea}}" class="option-panel" bindtap="hideAreaOptions">
+    <view class="option-content" catchtap="catchTap">
+      <view class="option-item" bindtap="filterByArea" data-area="">
+        <text>全部地区</text>
+      </view>
+      <view class="option-item" bindtap="filterByArea" data-area="朝阳区">
+        <text>朝阳区</text>
+      </view>
+      <view class="option-item" bindtap="filterByArea" data-area="海淀区">
+        <text>海淀区</text>
+      </view>
+      <view class="option-item" bindtap="filterByArea" data-area="东城区">
+        <text>东城区</text>
+      </view>
+      <view class="option-item" bindtap="filterByArea" data-area="西城区">
+        <text>西城区</text>
+      </view>
+    </view>
+  </view>
+</view>

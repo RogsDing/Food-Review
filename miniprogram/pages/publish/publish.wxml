@@ -1,0 +1,86 @@
+<view class="container">
+  <form bindsubmit="formSubmit" bindreset="formReset">
+    <view class="form-section">
+      <view class="form-item">
+        <text class="form-label">店铺名称</text>
+        <input class="form-input" name="shopName" placeholder="请输入店铺名称" value="{{shopName}}" />
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">地区</text>
+        <view class="area-selector">
+          <picker mode="multiSelector" bindchange="bindRegionChange" bindcolumnchange="bindRegionColumnChange" value="{{regionIndex}}" range="{{regionOptions}}">
+            <view class="picker-input">
+              {{city}} {{area}}
+            </view>
+          </picker>
+          <button class="location-btn" bindtap="getLocation">
+            <text class="location-icon">📍</text>
+          </button>
+        </view>
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">探店日期</text>
+        <picker mode="date" bindchange="bindDateChange" value="{{diningTime}}" start="2023-01-01" end="{{today}}">
+          <view class="picker-input">
+            {{diningTime || '请选择探店日期'}}
+          </view>
+        </picker>
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">评分</text>
+        <view class="rating-container">
+          <view class="stars-display">
+            <text wx:for="{{5}}" wx:key="*this" class="star-icon {{index < Math.floor(rating) ? 'active' : (index < rating ? 'half' : '')}}">★</text>
+            <text class="rating-value">{{rating}}</text>
+          </view>
+          <view class="slider-container">
+            <text class="slider-label">0.0</text>
+            <slider class="rating-slider" 
+                    value="{{rating}}" 
+                    min="0" 
+                    max="5" 
+                    step="0.1" 
+                    bindchange="handleSliderChange" 
+                    bindchanging="handleSliderChanging" />
+            <text class="slider-label">5.0</text>
+          </view>
+          <text class="slider-hint">拖动可精确到0.1分</text>
+        </view>
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">评价内容</text>
+        <textarea class="form-textarea" name="content" placeholder="请输入您的评价" value="{{content}}" />
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">类别</text>
+        <view class="category-tags">
+          <view wx:for="{{categories}}" wx:key="*this" 
+                class="category-tag {{selectedCategory === item ? 'selected' : ''}}" 
+                bindtap="selectCategory" 
+                data-category="{{item}}">
+            <text class="category-icon">{{getCategoryIcon(item)}}</text>
+            <text class="category-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">添加图片</text>
+        <view class="image-upload">
+          <view class="upload-item" bindtap="chooseImage">+</view>
+          <view wx:for="{{images}}" wx:key="*this" class="uploaded-image">
+            <image src="{{item}}" mode="aspectFill" />
+            <view class="delete-image" data-index="{{index}}" bindtap="deleteImage">×</view>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <button form-type="submit" class="submit-btn">{{isEdit ? '更新点评' : '提交点评'}}</button>
+  </form>
+</view>
