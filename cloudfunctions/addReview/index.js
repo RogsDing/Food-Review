@@ -21,7 +21,10 @@ exports.main = async (event, context) => {
       content: event.content,
       imageFileIDs: event.imageFileIDs || [],
       createTime: event.createTime || new Date().toISOString(),
-      openId: wxContext.OPENID
+      openId: wxContext.OPENID,
+      expense: event.expense,
+      people: event.people,
+      category: event.category
     }
     
     // 插入数据到数据库

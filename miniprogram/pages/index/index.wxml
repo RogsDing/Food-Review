@@ -10,25 +10,25 @@
   <!-- 分类导航 -->
   <view class="category-nav">
     <view class="category-list">
-      <view class="category-item" bindtap="selectCategory" data-category="美食">
-        <view class="category-icon">🍽️</view>
-        <text class="category-text">美食</text>
+      <view class="category-item" bindtap="selectCategory" data-category="川菜">
+        <view class="category-icon">🌶️</view>
+        <text class="category-text">川菜</text>
       </view>
-      <view class="category-item" bindtap="selectCategory" data-category="咖啡">
-        <view class="category-icon">☕</view>
-        <text class="category-text">咖啡</text>
+      <view class="category-item" bindtap="selectCategory" data-category="湘菜">
+        <view class="category-icon">🥘</view>
+        <text class="category-text">湘菜</text>
       </view>
-      <view class="category-item" bindtap="selectCategory" data-category="甜点">
-        <view class="category-icon">🍰</view>
-        <text class="category-text">甜点</text>
+      <view class="category-item" bindtap="selectCategory" data-category="江西菜">
+        <view class="category-icon">🍲</view>
+        <text class="category-text">江西菜</text>
       </view>
-      <view class="category-item" bindtap="selectCategory" data-category="酒吧">
-        <view class="category-icon">🍺</view>
-        <text class="category-text">酒吧</text>
+      <view class="category-item" bindtap="selectCategory" data-category="自助">
+        <view class="category-icon">🍴</view>
+        <text class="category-text">自助</text>
       </view>
-      <view class="category-item" bindtap="selectCategory" data-category="面食">
-        <view class="category-icon">🍜</view>
-        <text class="category-text">面食</text>
+      <view class="category-item" bindtap="selectCategory" data-category="韩料">
+        <view class="category-icon">🥓</view>
+        <text class="category-text">韩料</text>
       </view>
       <view class="category-item" bindtap="selectCategory" data-category="日料">
         <view class="category-icon">🍱</view>
@@ -41,6 +41,10 @@
       <view class="category-item" bindtap="selectCategory" data-category="火锅">
         <view class="category-icon">🥘</view>
         <text class="category-text">火锅</text>
+      </view>
+      <view class="category-item" bindtap="selectCategory" data-category="烧烤">
+        <view class="category-icon">🍖</view>
+        <text class="category-text">烧烤</text>
       </view>
     </view>
   </view>
@@ -55,9 +59,22 @@
       <text>附近</text>
       <view class="filter-arrow"></view>
     </view>
+    <view class="filter-item" bindtap="showCategoryOptions">
+      <text>{{categoryText}}</text>
+      <view class="filter-arrow"></view>
+    </view>
     <view class="filter-item" bindtap="showFilterOptions">
       <text>筛选</text>
       <view class="filter-arrow"></view>
+    </view>
+  </view>
+
+  <!-- 分类选项 -->
+  <view wx:if="{{showCategory}}" class="option-panel" bindtap="hideCategoryOptions">
+    <view class="option-content" catchtap="catchTap">
+      <view class="option-item" wx:for="{{categories}}" wx:key="{{index}}" bindtap="selectCategory" data-category="{{item}}">
+        <text>{{item}}</text>
+      </view>
     </view>
   </view>
   
@@ -78,12 +95,9 @@
           </view>
           <view class="shop-meta">
             <text>人均 ¥{{item.averagePrice || 0}}</text>
-            <text>月售{{item.monthlySales || 0}}</text>
-            <text>{{item.area}}</text>
           </view>
           <view class="shop-tags">
-            <text class="shop-tag">高性价比</text>
-            <text class="shop-tag">适合二刷</text>
+
             <text class="shop-tag">{{item.category || '美食'}}</text>
           </view>
           <view class="shop-bottom">
@@ -127,20 +141,13 @@
   <!-- 地区选项 -->
   <view wx:if="{{showArea}}" class="option-panel" bindtap="hideAreaOptions">
     <view class="option-content" catchtap="catchTap">
-      <view class="option-item" bindtap="filterByArea" data-area="">
-        <text>全部地区</text>
-      </view>
-      <view class="option-item" bindtap="filterByArea" data-area="朝阳区">
-        <text>朝阳区</text>
-      </view>
-      <view class="option-item" bindtap="filterByArea" data-area="海淀区">
-        <text>海淀区</text>
-      </view>
-      <view class="option-item" bindtap="filterByArea" data-area="东城区">
-        <text>东城区</text>
-      </view>
-      <view class="option-item" bindtap="filterByArea" data-area="西城区">
-        <text>西城区</text>
+      <!-- 多级选择器 -->
+      <view class="region-picker">
+        <picker mode="multiSelector" bindchange="bindRegionChange" bindcolumnchange="bindRegionColumnChange" value="{{regionIndex}}" range="{{regionOptions}}">
+          <view class="picker-input">
+            {{province}} {{city}}
+          </view>
+        </picker>
       </view>
     </view>
   </view>

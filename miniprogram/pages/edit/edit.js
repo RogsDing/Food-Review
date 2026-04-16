@@ -3,7 +3,7 @@ Page({
     rating: 3.0,
     images: [],
     diningTime: '',
-    isEdit: false,
+    isEdit: true,
     reviewId: '',
     categories: ['川菜', '湘菜', '江西菜', '自助', '韩料', '日料', '西餐', '火锅', '烧烤'],
     selectedCategory: '川菜',
@@ -75,7 +75,9 @@ Page({
     province: '北京市',
     city: '北京市',
     area: '朝阳区',
-    today: ''
+    today: '',
+    shopName: '',
+    content: ''
   },
   
   onLoad: function (options) {
@@ -85,50 +87,48 @@ Page({
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     this.setData({
-      today: `${year}-${month}-${day}`,
-      diningTime: `${year}-${month}-${day}`
+      today: `${year}-${month}-${day}`
     });
     
-    // 检查是否是编辑模式
-    if (options.edit) {
-      // 从本地存储中读取编辑数据
-      const editData = wx.getStorageSync('editReviewData');
-      if (editData) {
-        // 计算城市和地区索引
-        let cityIndex = 0;
-        let districtIndex = 0;
-        let city = '北京';
-        
-        // 尝试找到地区所在的城市
-        const cities = this.data.regionOptions[0];
-        for (let i = 0; i < cities.length; i++) {
-          // 这里简化处理，实际应该根据城市获取对应的区列表
-          // 为了演示，我们假设所有城市都有相同的区列表
-          const districtIndexInCity = this.data.regionOptions[1].indexOf(editData.area);
-          if (districtIndexInCity >= 0) {
-            cityIndex = i;
-            districtIndex = districtIndexInCity;
-            city = cities[i];
-            break;
-          }
+    // 从本地存储中读取编辑数据
+    const editData = wx.getStorageSync('editReviewData');
+    if (editData) {
+      // 计算城市和地区索引
+      let cityIndex = 0;
+      let districtIndex = 0;
+      let city = '北京';
+      
+      // 尝试找到地区所在的城市
+      const cities = this.data.regionOptions[0];
+      for (let i = 0; i < cities.length; i++) {
+        // 这里简化处理，实际应该根据城市获取对应的区列表
+        // 为了演示，我们假设所有城市都有相同的区列表
+        const districtIndexInCity = this.data.regionOptions[1].indexOf(editData.area);
+        if (districtIndexInCity >= 0) {
+          cityIndex = i;
+          districtIndex = districtIndexInCity;
+          city = cities[i];
+          break;
         }
-        
-        this.setData({
-          isEdit: true,
-          reviewId: editData._id,
-          rating: editData.rating,
-          images: editData.imageFileIDs || [],
-          diningTime: editData.diningTime,
-          shopName: editData.shopName,
-          city: city,
-          area: editData.area,
-          regionIndex: [cityIndex, districtIndex],
-          content: editData.content,
-          selectedCategory: editData.category || '美食'
-        });
-        // 清除本地存储中的编辑数据
-        wx.removeStorageSync('editReviewData');
       }
+      
+      this.setData({
+        isEdit: true,
+        reviewId: editData._id,
+        rating: editData.rating,
+        images: editData.imageFileIDs || [],
+        diningTime: editData.diningTime,
+        shopName: editData.shopName,
+        city: city,
+        area: editData.area,
+        regionIndex: [cityIndex, districtIndex],
+        content: editData.content,
+        selectedCategory: editData.category || '川菜',
+        expense: editData.expense || '',
+        people: editData.people || ''
+      });
+      // 清除本地存储中的编辑数据
+      wx.removeStorageSync('editReviewData');
     }
   },
   

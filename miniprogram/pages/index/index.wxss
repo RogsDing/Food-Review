@@ -405,3 +405,17 @@
   padding-left: 24rpx;
   padding-right: 24rpx;
 }
+
+/* 地区选择器 */
+.region-picker {
+  padding: 20rpx 0;
+}
+
+.picker-input {
+  padding: 24rpx;
+  font-size: 28rpx;
+  color: #333;
+  text-align: center;
+}
+
+

@@ -21,6 +21,11 @@ exports.main = async (event, context) => {
       query = query.where({ area: event.area })
     }
     
+    // 按分类筛选
+    if (event.category) {
+      query = query.where({ category: event.category })
+    }
+    
     // 按关键词搜索
     if (event.keyword) {
       query = query.where(_.or([

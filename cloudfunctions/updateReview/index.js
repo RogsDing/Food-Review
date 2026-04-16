@@ -22,7 +22,10 @@ exports.main = async (event, context) => {
       rating: updateData.rating,
       content: updateData.content,
       imageFileIDs: updateData.imageFileIDs || [],
-      updateTime: new Date().toISOString()
+      updateTime: new Date().toISOString(),
+      expense: updateData.expense,
+      people: updateData.people,
+      category: updateData.category
     }
     
     // 更新数据到数据库

@@ -38,9 +38,9 @@ Page({
     const review = this.data.review;
     // 将编辑数据存储到本地存储
     wx.setStorageSync('editReviewData', review);
-    // 使用switchTab跳转到发布页面（因为发布页面是tab页面）
-    wx.switchTab({
-      url: '/pages/publish/publish?edit=true'
+    // 跳转到编辑页面
+    wx.navigateTo({
+      url: '/pages/edit/edit'
     });
   },
   

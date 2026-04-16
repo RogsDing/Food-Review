@@ -3,6 +3,7 @@
     "pages/index/index",
     "pages/publish/publish",
     "pages/detail/detail",
+    "pages/edit/edit",
     "pages/profile/profile",
     "pages/settings/settings",
     "pages/search/search"

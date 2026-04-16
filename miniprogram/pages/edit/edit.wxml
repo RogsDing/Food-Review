@@ -91,6 +91,6 @@
       </view>
     </view>
     
-    <button form-type="submit" class="submit-btn">{{isEdit ? '更新点评' : '提交点评'}}</button>
+    <button form-type="submit" class="submit-btn">更新点评</button>
   </form>
 </view>
