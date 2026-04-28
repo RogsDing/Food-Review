@@ -21,7 +21,7 @@
     </view>
   </view>
   
-  <view class="detail-actions">
+  <view class="detail-actions" wx:if="{{isAuthor}}">
     <button class="action-btn" bindtap="deleteReview">删除</button>
     <button class="action-btn primary" bindtap="editReview">编辑</button>
   </view>

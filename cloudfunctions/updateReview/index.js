@@ -14,10 +14,27 @@ exports.main = async (event, context) => {
   try {
     const { reviewId, ...updateData } = event
     
+    // 检查点评是否存在且是否属于当前用户
+    const review = await db.collection('reviews').doc(reviewId).get()
+    if (!review.data) {
+      return {
+        success: false,
+        error: '点评不存在'
+      }
+    }
+    
+    if (review.data.openId !== wxContext.OPENID) {
+      return {
+        success: false,
+        error: '无权限编辑此点评'
+      }
+    }
+    
     // 构建更新数据
     const updateFields = {
       shopName: updateData.shopName,
       area: updateData.area,
+      city: updateData.city,
       diningTime: updateData.diningTime,
       rating: updateData.rating,
       content: updateData.content,

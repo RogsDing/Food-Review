@@ -1,5 +1,5 @@
 <view class="container">
-  <form bindsubmit="formSubmit" bindreset="formReset">
+  <form bindsubmit="checkLoginAndSubmit" bindreset="formReset">
     <view class="form-section">
       <view class="form-item">
         <text class="form-label">店铺名称</text>
@@ -11,7 +11,7 @@
         <view class="area-selector">
           <picker mode="multiSelector" bindchange="bindRegionChange" bindcolumnchange="bindRegionColumnChange" value="{{regionIndex}}" range="{{regionOptions}}">
             <view class="picker-input">
-              {{province}} {{city}}
+              {{province && city ? province + ' ' + city : '请选择地区'}}
             </view>
           </picker>
           <button class="location-btn" bindtap="getLocation">

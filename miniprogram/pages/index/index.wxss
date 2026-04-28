@@ -99,14 +99,98 @@
 
 .shop-image {
   width: 100%;
-  height: 240rpx;
   overflow: hidden;
+  position: relative;
 }
 
-.shop-image image {
+/* 单张图片：移除固定高度，让其自然按比例缩放，设置 max-height 防止图片过长占满全屏 */
+.single-image {
+  width: 100%;
+  max-height: 480rpx;
+  overflow: hidden;
+  border-radius: 8rpx;
+}
+
+.single-image image {
+  width: 100%;
+  height: auto; /* 配合 WXML 中的 mode="widthFix" 使用 */
+  display: block;
+}
+
+/* 两张图片：适当增加高度，原来是240rpx，建议调到 300rpx左右，让单图比例更舒服 */
+.two-images {
+  width: 100%;
+  height: 300rpx; 
+  display: flex;
+  gap: 6rpx; /* 稍微加大一点间隙，视觉更透气 */
+}
+
+.two-image-item {
+  flex: 1;
+  height: 100%;
+  object-fit: cover; /* CSS作为辅助 */
+  border-radius: 8rpx;
+}
+
+/* 多张图片(2x2网格)：总高度必须调高！原来240rpx除以2行只有120rpx，这里改为 400rpx */
+.multi-image {
+  width: 100%;
+  height: 400rpx;
+  position: relative;
+}
+
+.image-grid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 6rpx;
+}
+
+.grid-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 8rpx;
+}
+
+/* 多图蒙层样式微调，跟圆角保持一致 */
+.more-images {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: calc(50% - 3rpx);
+  height: calc(50% - 3rpx);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 32rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  grid-column: 2;
+  grid-row: 2;
+  border-bottom-right-radius: 8rpx;
+}
+
+/* 响应式调整同步修改 */
+@media (max-width: 375px) {
+  .single-image {
+    max-height: 400rpx;
+  }
+  
+  .two-images {
+    height: 260rpx;
+  }
+  
+  .multi-image {
+    height: 360rpx; /* 多图在小屏幕上整体高度 */
+  }
+  
+  .more-images {
+    font-size: 28rpx;
+  }
 }
 
 .shop-info {
@@ -151,9 +235,14 @@
 
 .shop-tags {
   display: flex;
-  gap: 8rpx;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 12rpx;
+}
+
+.shop-address-container {
+  display: flex;
+  align-items: center;
 }
 
 .shop-tag {
@@ -174,8 +263,8 @@
 }
 
 .shop-address {
-  flex: 1;
-  margin-right: 16rpx;
+  font-size: 22rpx;
+  color: #999;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -30,17 +30,46 @@ App({
   },
   
   login: function () {
-    wx.cloud.callFunction({
-      name: 'login'
-    })
-    .then(res => {
-      if (res.result && res.result.userInfo) {
-        this.globalData.userInfo = res.result.userInfo;
-        wx.setStorageSync('userInfo', res.result.userInfo);
+    // 调用wx.login获取code
+    wx.login({
+      success: (loginRes) => {
+        if (loginRes.code) {
+          // 调用后端登录接口
+          wx.request({
+            url: 'https://your-api-server.com/api/login', // 后端登录接口URL占位符
+            method: 'POST',
+            data: {
+              code: loginRes.code
+            },
+            success: (res) => {
+              console.log('后端登录接口返回:', res);
+              
+              if (res.data && res.data.success) {
+                const data = res.data.data;
+                
+                // 存储Token
+                if (data.token) {
+                  wx.setStorageSync('token', data.token);
+                }
+                
+                // 资料完整，存储用户信息
+                if (!data.needCompleteProfile && data.userInfo) {
+                  this.globalData.userInfo = data.userInfo;
+                  wx.setStorageSync('userInfo', data.userInfo);
+                }
+              }
+            },
+            fail: (err) => {
+              console.error('登录接口调用失败:', err);
+            }
+          });
+        } else {
+          console.error('获取code失败:', loginRes);
+        }
+      },
+      fail: (err) => {
+        console.error('wx.login失败:', err);
       }
-    })
-    .catch(err => {
-      console.error('登录失败:', err);
     });
   }
 });

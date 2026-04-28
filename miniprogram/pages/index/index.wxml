@@ -55,9 +55,13 @@
       <text>综合排序</text>
       <view class="filter-arrow"></view>
     </view>
-    <view class="filter-item" bindtap="showAreaOptions">
-      <text>附近</text>
-      <view class="filter-arrow"></view>
+    <view class="filter-item">
+      <picker mode="multiSelector" bindchange="bindRegionChange" bindcolumnchange="bindRegionColumnChange" value="{{regionIndex}}" range="{{regionOptions}}">
+        <view style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+          <text>{{areaText}}</text>
+          <view class="filter-arrow"></view>
+        </view>
+      </picker>
     </view>
     <view class="filter-item" bindtap="showCategoryOptions">
       <text>{{categoryText}}</text>
@@ -83,7 +87,24 @@
     <block wx:for="{{reviews}}" wx:key="_id">
       <view class="shop-card" bindtap="goToDetail" data-id="{{item._id}}">
         <view class="shop-image" wx:if="{{item.imageFileIDs && item.imageFileIDs.length > 0}}">
-          <image src="{{item.imageFileIDs[0]}}" mode="aspectFill" />
+          <!-- 单张图片 -->
+          <view wx:if="{{item.imageFileIDs.length === 1}}" class="single-image">
+            <image src="{{item.imageFileIDs[0]}}" mode="widthFix" />
+          </view>
+          <!-- 两张图片 -->
+          <view wx:elif="{{item.imageFileIDs.length === 2}}" class="two-images">
+            <image src="{{item.imageFileIDs[0]}}" mode="aspectFill" class="two-image-item" />
+            <image src="{{item.imageFileIDs[1]}}" mode="aspectFill" class="two-image-item" />
+          </view>
+          <!-- 三张及以上图片 -->
+          <view wx:else class="multi-image">
+            <view class="image-grid">
+              <image wx:for="{{item.imageFileIDs}}" wx:key="{{index}}" src="{{item}}" mode="aspectFill" class="grid-image" wx:if="{{index < 4}}" />
+              <view wx:if="{{item.imageFileIDs.length > 4}}" class="more-images">
+                <text>+{{item.imageFileIDs.length - 4}}</text>
+              </view>
+            </view>
+          </view>
         </view>
         <view class="shop-info">
           <view class="shop-header">
@@ -97,12 +118,10 @@
             <text>人均 ¥{{item.averagePrice || 0}}</text>
           </view>
           <view class="shop-tags">
-
             <text class="shop-tag">{{item.category || '美食'}}</text>
-          </view>
-          <view class="shop-bottom">
-            <text class="shop-address">{{item.address || item.area}}</text>
-            <text class="shop-distance">{{item.distance || '1.2km'}}</text>
+            <view class="shop-address-container">
+              <text class="shop-address">{{item.address}}</text>
+            </view>
           </view>
         </view>
       </view>

@@ -2,7 +2,7 @@ Page({
   data: {
     reviews: [],
     sortText: '评分排序',
-    areaText: '地区筛选',
+    areaText: '地区',
     showSort: false,
     showArea: false,
     showCategory: false,
@@ -13,13 +13,15 @@ Page({
     searchKeyword: '',
     category: '',
     categoryText: '全部分类',
+    type: '',
     // 地区选择器相关数据
     regionOptions: [
-      ['北京市', '上海市', '天津市', '重庆市', '河北省', '山西省', '辽宁省', '吉林省', '黑龙江省', '江苏省', '浙江省', '安徽省', '福建省', '江西省', '山东省', '河南省', '湖北省', '湖南省', '广东省', '海南省', '四川省', '贵州省', '云南省', '陕西省', '甘肃省', '青海省', '台湾省', '内蒙古自治区', '广西壮族自治区', '西藏自治区', '宁夏回族自治区', '新疆维吾尔自治区', '香港特别行政区', '澳门特别行政区'],
-      ['北京市', '上海市', '天津市', '重庆市', '石家庄市', '太原市', '沈阳市', '长春市', '哈尔滨市', '南京市', '杭州市', '合肥市', '福州市', '南昌市', '济南市', '郑州市', '武汉市', '长沙市', '广州市', '海口市', '成都市', '贵阳市', '昆明市', '西安市', '兰州市', '西宁市', '台北市', '呼和浩特市', '南宁市', '拉萨市', '银川市', '乌鲁木齐市', '香港', '澳门']
+      ['全部地区', '北京市', '上海市', '天津市', '重庆市', '河北省', '山西省', '辽宁省', '吉林省', '黑龙江省', '江苏省', '浙江省', '安徽省', '福建省', '江西省', '山东省', '河南省', '湖北省', '湖南省', '广东省', '海南省', '四川省', '贵州省', '云南省', '陕西省', '甘肃省', '青海省', '台湾省', '内蒙古自治区', '广西壮族自治区', '西藏自治区', '宁夏回族自治区', '新疆维吾尔自治区', '香港特别行政区', '澳门特别行政区'],
+      ['']
     ],
     // 省份对应的城市列表
     provinceCityMap: {
+      '全部地区': [''],
       '北京市': ['北京市'],
       '上海市': ['上海市'],
       '天津市': ['天津市'],
@@ -56,30 +58,40 @@ Page({
       '澳门特别行政区': ['澳门']
     },
     regionIndex: [0, 0],
-    province: '北京市',
-    city: '北京市'
+    province: '全部地区',
+    city: ''
   },
   
   onLoad: function (options) {
-    this.getReviews();
+    if (options.type) {
+      this.getReviews(options.type);
+    } else {
+      this.getReviews();
+    }
   },
   
   onShow: function () {
-    this.getReviews();
+    this.getReviews(this.data.type);
   },
   
-  getReviews: function () {
+  getReviews: function (type) {
+    // 存储type参数到data中
+    this.setData({
+      type: type
+    });
+    
     wx.showLoading({ title: '加载中...' });
     wx.cloud.callFunction({
       name: 'getReviews',
       data: {
         sortBy: this.data.sortBy,
         sortOrder: this.data.sortOrder,
-        area: this.data.area,
+        city: this.data.city,
         keyword: this.data.searchKeyword,
-        category: this.data.category
+        category: this.data.category,
+        type: type
       }
-    })  
+    })
     .then(res => {
       wx.hideLoading();
       if (res.result) {
@@ -90,8 +102,12 @@ Page({
           monthlySales: item.monthlySales || Math.floor(Math.random() * 1000) + 100, // 随机生成月售数量
           category: item.category || ['川菜', '湘菜', '江西菜', '自助', '韩料', '日料', '西餐', '火锅', '烧烤'][Math.floor(Math.random() * 9)], // 随机生成分类
           distance: item.distance || (Math.random() * 3 + 0.5).toFixed(1) + 'km', // 随机生成距离
-          address: item.address || item.area + '街道'
+          address: item.address || item.city
         }));
+        
+        // 处理图片链接
+        this.processImageUrls(reviews);
+        
         this.setData({
           reviews: reviews
         });
@@ -105,6 +121,58 @@ Page({
       });
       console.error(err);
     });
+  },
+  
+  // 处理图片链接，使用云函数获取临时链接
+  processImageUrls: function(reviews) {
+    // 收集所有图片的fileID
+    const allFileIDs = [];
+    reviews.forEach(review => {
+      if (review.imageFileIDs && review.imageFileIDs.length > 0) {
+        review.imageFileIDs.forEach(fileID => {
+          allFileIDs.push(fileID);
+        });
+      }
+    });
+    
+    if (allFileIDs.length > 0) {
+      // 调用云函数获取临时链接
+      wx.cloud.callFunction({
+        name: 'getImageUrl',
+        data: {
+          fileList: allFileIDs
+        }
+      })
+      .then(res => {
+        if (res.result && res.result.success) {
+          const tempUrls = {};
+          res.result.data.forEach(item => {
+            tempUrls[item.fileID] = item.tempFileURL;
+          });
+          
+          // 更新点评列表中的图片链接
+          const updatedReviews = reviews.map(review => {
+            if (review.imageFileIDs && review.imageFileIDs.length > 0) {
+              const updatedImageFileIDs = review.imageFileIDs.map(fileID => {
+                return tempUrls[fileID] || fileID;
+              });
+              return {
+                ...review,
+                imageFileIDs: updatedImageFileIDs
+              };
+            }
+            return review;
+          });
+          
+          this.setData({
+            reviews: updatedReviews
+          });
+        }
+      })
+      .catch(err => {
+        console.error('获取图片链接失败:', err);
+      });
+    }
   },
   
   showSortOptions: function () {
@@ -178,14 +246,26 @@ Page({
     const regionIndex = e.detail.value;
     const province = this.data.regionOptions[0][regionIndex[0]];
     const city = this.data.regionOptions[1][regionIndex[1]];
-    this.setData({
-      regionIndex: regionIndex,
-      province: province,
-      city: city,
-      area: city,
-      areaText: city,
-      showArea: false
-    });
+    
+    if (province === '全部地区') {
+      this.setData({
+        regionIndex: regionIndex,
+        province: province,
+        city: '',
+        area: '',
+        areaText: '地区'
+        // 已删除 showArea: false
+      });
+    } else {
+      this.setData({
+        regionIndex: regionIndex,
+        province: province,
+        city: city,
+        area: city,
+        areaText: city
+        // 已删除 showArea: false
+      });
+    }
     this.getReviews();
   },
 

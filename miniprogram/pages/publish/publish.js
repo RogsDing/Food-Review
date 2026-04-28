@@ -11,7 +11,7 @@ Page({
     people: '',
     regionOptions: [
       ['北京市', '上海市', '天津市', '重庆市', '河北省', '山西省', '辽宁省', '吉林省', '黑龙江省', '江苏省', '浙江省', '安徽省', '福建省', '江西省', '山东省', '河南省', '湖北省', '湖南省', '广东省', '海南省', '四川省', '贵州省', '云南省', '陕西省', '甘肃省', '青海省', '台湾省', '内蒙古自治区', '广西壮族自治区', '西藏自治区', '宁夏回族自治区', '新疆维吾尔自治区', '香港特别行政区', '澳门特别行政区'],
-      ['北京市', '上海市', '天津市', '重庆市', '石家庄市', '唐山市', '太原市', '大同市', '沈阳市', '大连市', '长春市', '吉林市', '哈尔滨市', '齐齐哈尔市', '南京市', '苏州市', '杭州市', '宁波市', '合肥市', '芜湖市', '福州市', '厦门市', '南昌市', '九江市', '济南市', '青岛市', '郑州市', '洛阳市', '武汉市', '宜昌市', '长沙市', '株洲市', '广州市', '深圳市', '海口市', '成都市', '绵阳市', '贵阳市', '遵义市', '昆明市', '曲靖市', '西安市', '宝鸡市', '兰州市', '天水市', '西宁市', '台北市', '高雄市', '呼和浩特市', '包头市', '南宁市', '桂林市', '拉萨市', '银川市', '乌鲁木齐市', '香港', '澳门']
+      ['北京市']
     ],
     // 省份对应的城市列表
     provinceCityMap: {
@@ -71,10 +71,10 @@ Page({
       '宁波市': ['海曙区', '江北区', '北仑区', '镇海区', '鄞州区', '奉化区', '象山县', '宁海县', '余姚市', '慈溪市'],
       '福州市': ['鼓楼区', '台江区', '仓山区', '马尾区', '晋安区', '长乐区', '闽侯县', '连江县', '罗源县', '闽清县', '永泰县', '平潭县', '福清市']
     },
-    regionIndex: [0, 0],
-    province: '北京市',
-    city: '北京市',
-    area: '朝阳区',
+    regionIndex: [-1, -1],
+    province: '',
+    city: '',
+    area: '',
     today: ''
   },
   
@@ -84,10 +84,7 @@ Page({
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    this.setData({
-      today: `${year}-${month}-${day}`,
-      diningTime: `${year}-${month}-${day}`
-    });
+    const todayDate = `${year}-${month}-${day}`;
     
     // 检查是否是编辑模式
     if (options.edit) {
@@ -124,11 +121,40 @@ Page({
           area: editData.area,
           regionIndex: [cityIndex, districtIndex],
           content: editData.content,
-          selectedCategory: editData.category || '美食'
+          selectedCategory: editData.category || '美食',
+          today: todayDate
         });
         // 清除本地存储中的编辑数据
         wx.removeStorageSync('editReviewData');
       }
+    } else {
+      // 非编辑模式，清空表单数据
+      this.formReset();
+      this.setData({
+        today: todayDate,
+        diningTime: todayDate
+      });
+    }
+  },
+  
+  onShow: function () {
+    // 检查用户是否登录
+    if (!getApp().globalData.userInfo) {
+      wx.showModal({
+        title: '提示',
+        content: '请先登录后再发布点评',
+        confirmText: '去登录',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            // 跳转到登录页面或触发登录流程
+            wx.switchTab({ url: '/pages/profile/profile' });
+          } else {
+            // 用户取消登录，返回上一页
+            wx.navigateBack();
+          }
+        }
+      });
     }
   },
   
@@ -137,13 +163,11 @@ Page({
     const regionIndex = e.detail.value;
     const province = this.data.regionOptions[0][regionIndex[0]];
     const city = this.data.regionOptions[1][regionIndex[1]];
-    const districts = this.data.allDistrictOptions[city] || [''];
-    const area = districts[0];
     this.setData({
       regionIndex: regionIndex,
       province: province,
       city: city,
-      area: area
+      area: city
     });
   },
   
@@ -158,7 +182,6 @@ Page({
       const selectedProvince = provinces[value];
       const cities = this.data.provinceCityMap[selectedProvince];
       const firstCity = cities[0];
-      const districts = this.data.allDistrictOptions[firstCity] || [''];
       
       // 更新regionOptions和regionIndex
       this.setData({
@@ -169,19 +192,18 @@ Page({
         regionIndex: [value, 0],
         province: selectedProvince,
         city: firstCity,
-        area: districts[0]
+        area: firstCity
       });
     } else if (column === 1) {
-      // 根据选择的城市更新区列表
+      // 根据选择的城市更新
       const cities = this.data.regionOptions[1];
       const selectedCity = cities[value];
-      const districts = this.data.allDistrictOptions[selectedCity] || [''];
       
       // 更新regionIndex和area
       this.setData({
         regionIndex: [this.data.regionIndex[0], value],
         city: selectedCity,
-        area: districts[0]
+        area: selectedCity
       });
     }
   },
@@ -208,24 +230,24 @@ Page({
               const cities = that.data.regionOptions[0];
               const cityIndex = cities.indexOf(city);
               if (cityIndex >= 0) {
-                // 根据定位到的城市获取对应的区列表
-                const districts = that.data.allDistrictOptions[cityIndex];
-                const districtIndex = districts.indexOf(district);
+                // 根据定位到的城市获取对应的城市列表
+                const cityList = that.data.provinceCityMap[cities[cityIndex]];
+                const cityListIndex = cityList.indexOf(city);
                 
                 // 更新regionOptions和regionIndex
                 that.setData({
                   regionOptions: [
                     that.data.regionOptions[0],
-                    districts
+                    cityList
                   ],
                   city: city,
-                  area: districtIndex >= 0 ? district : districts[0],
-                  regionIndex: [cityIndex, districtIndex >= 0 ? districtIndex : 0]
+                  area: city,
+                  regionIndex: [cityIndex, cityListIndex >= 0 ? cityListIndex : 0]
                 });
                 
-                if (districtIndex < 0) {
+                if (cityListIndex < 0) {
                   wx.showToast({
-                    title: '定位成功，但地区不在选项中，已选择该城市的默认地区',
+                    title: '定位成功，但城市不在选项中，已选择该省份的默认城市',
                     icon: 'none'
                   });
                 }
@@ -341,6 +363,29 @@ Page({
     });
   },
   
+  // 检查登录状态并提交表单
+  checkLoginAndSubmit(e) {
+    // 检查用户是否登录
+    if (!getApp().globalData.userInfo) {
+      wx.showModal({
+        title: '提示',
+        content: '请先登录后再发布点评',
+        confirmText: '去登录',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            // 跳转到登录页面或触发登录流程
+            wx.switchTab({ url: '/pages/profile/profile' });
+          }
+        }
+      });
+      return;
+    }
+    
+    // 登录状态检查通过，执行表单提交
+    this.formSubmit(e);
+  },
+  
   formSubmit(e) {
     const formData = e.detail.value;
     formData.images = this.data.images;
@@ -386,28 +431,75 @@ Page({
       return;
     }
     
-    // 直接提交点评，不请求订阅消息授权
-    this.submitReview(formData, true);
+    if (!this.data.expense) {
+      wx.showToast({
+        title: '请输入消费金额',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    if (!this.data.people) {
+      wx.showToast({
+        title: '请输入消费人数',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 检查用户是否已经授权过订阅消息
+    const hasSubscribed = wx.getStorageSync('hasSubscribedMessage');
+    if (hasSubscribed) {
+      // 用户已经授权过，直接提交点评并发送订阅消息
+      this.submitReview(formData, true);
+    } else {
+      // 请求订阅消息权限，通过后提交点评
+      const templateId = 'mPBTma8iiO0plnhED029wfU2t2uxx151nGel5YoP80A';
+      wx.requestSubscribeMessage({
+        tmplIds: [templateId],
+        success: (res) => {
+          const accepted = res[templateId] === 'accept';
+          if (accepted) {
+            // 存储用户订阅状态
+            wx.setStorageSync('hasSubscribedMessage', true);
+          }
+          this.submitReview(formData, accepted);
+        },
+        fail: () => {
+          // 用户拒绝或请求失败，仍提交点评但不发订阅消息
+          this.submitReview(formData, false);
+        }
+      });
+    }
   },
   
   // 提交点评数据
   submitReview(formData, isSubscribed) {
+    console.log('开始提交点评:', formData);
+    
     // 上传图片
     const uploadTasks = this.data.images.map((image, index) => {
       return new Promise((resolve, reject) => {
+        console.log('上传图片:', image);
         // 检查是否是已上传的图片（fileID格式）
         if (image.startsWith('cloud://')) {
           // 已经是云存储的fileID，不需要重新上传
+          console.log('图片已经是fileID，直接使用:', image);
           resolve(image);
         } else {
           // 新选择的本地图片，需要上传
+          console.log('开始上传本地图片:', image);
           wx.cloud.uploadFile({
             cloudPath: 'review/images/' + Date.now() + '_' + index + '.png',
             filePath: image,
             success: res => {
+              console.log('图片上传成功:', res.fileID);
+              // 直接resolve，不设置文件权限
+              console.log('直接resolve，不设置文件权限');
               resolve(res.fileID);
             },
             fail: err => {
+              console.error('图片上传失败:', err);
               reject(err);
             }
           });
@@ -417,97 +509,271 @@ Page({
     
     wx.showLoading({ title: '提交中...' });
     
-    Promise.all(uploadTasks)
-      .then(fileIDs => {
-        formData.imageFileIDs = fileIDs;
-        
-        // 保存点评数据
-        if (this.data.isEdit) {
-          // 编辑模式：更新已有点评
-          return wx.cloud.callFunction({
-            name: 'updateReview',
-            data: {
-              reviewId: this.data.reviewId,
-              ...formData
-            }
+    console.log('开始处理图片上传任务');
+    
+    // 直接处理图片上传，不使用Promise.all
+    let fileIDs = [];
+    let uploadIndex = 0;
+    let simplifiedFormData;
+    
+    console.log('上传任务数量:', uploadTasks.length);
+    
+    const uploadNext = () => {
+      console.log('进入uploadNext函数，当前索引:', uploadIndex, '任务数量:', uploadTasks.length);
+      if (uploadIndex >= uploadTasks.length) {
+        // 所有图片上传完成
+        console.log('所有图片上传完成:', fileIDs);
+        console.log('准备调用handleUploadComplete');
+        handleUploadComplete(fileIDs);
+        return;
+      }
+      
+      console.log('开始上传第', uploadIndex + 1, '张图片');
+      const uploadTask = uploadTasks[uploadIndex];
+      uploadTask
+        .then(fileID => {
+          console.log('进入then回调函数');
+          console.log('第', uploadIndex + 1, '张图片上传成功:', fileID);
+          fileIDs.push(fileID);
+          console.log('fileIDs数组:', fileIDs);
+          uploadIndex++;
+          console.log('uploadIndex:', uploadIndex);
+          console.log('uploadTasks.length:', uploadTasks.length);
+          console.log('准备上传下一张图片，当前索引:', uploadIndex);
+          uploadNext();
+        })
+        .catch(err => {
+          console.error('上传图片失败:', err);
+          wx.hideLoading();
+          wx.showToast({
+            title: '图片上传失败',
+            icon: 'none'
           });
-        } else {
-          // 新增模式：创建新点评
-          return wx.cloud.callFunction({
-            name: 'addReview',
-            data: formData
-          });
-        }
-      })
-      .then(res => {
-        wx.hideLoading();
-        wx.showToast({
-          title: this.data.isEdit ? '更新成功' : '提交成功',
-          icon: 'success'
         });
-        
-        // 如果用户授权了订阅消息，则发送通知
-        if (isSubscribed) {
-          this.sendSubscribeMessage();
-        }
-        
-        // 跳转回详情页或首页
-        setTimeout(() => {
-          if (this.data.isEdit) {
-            wx.navigateBack();
-          } else {
-            wx.switchTab({ url: '/pages/index/index' });
+    };
+    
+    const handleUploadComplete = (uploadedFileIDs) => {
+      console.log('处理图片上传完成:', uploadedFileIDs);
+      
+      // 简化formData，只传递必要的参数
+      simplifiedFormData = {
+        shopName: formData.shopName,
+        area: formData.area,
+        city: formData.city,
+        diningTime: formData.diningTime,
+        rating: formData.rating,
+        content: formData.content,
+        imageFileIDs: uploadedFileIDs,
+        createTime: formData.createTime,
+        category: formData.category,
+        expense: formData.expense,
+        people: formData.people
+      };
+      
+      console.log('简化后的formData:', simplifiedFormData);
+      
+      // 保存点评数据
+      console.log('准备调用云函数');
+      
+      // 直接调用云函数
+      if (this.data.isEdit) {
+        // 编辑模式：更新已有点评
+        console.log('更新已有点评:', this.data.reviewId);
+        console.log('调用updateReview云函数');
+        wx.cloud.callFunction({
+          name: 'updateReview',
+          data: {
+            reviewId: this.data.reviewId,
+            ...simplifiedFormData
+          },
+          success: (cloudResult) => {
+            console.log('云函数调用完成:', cloudResult);
+            handleCloudFunctionResult(cloudResult);
+          },
+          fail: (err) => {
+            console.error('updateReview云函数调用失败:', err);
+            wx.hideLoading();
+            wx.showToast({
+              title: '操作失败: ' + (err.message || '未知错误'),
+              icon: 'none',
+              duration: 3000
+            });
           }
-        }, 1000);
-      })
-      .catch(err => {
-        wx.hideLoading();
+        });
+      } else {
+        // 新增模式：创建新点评
+        console.log('创建新点评');
+        console.log('调用addReview云函数');
+        wx.cloud.callFunction({
+          name: 'addReview',
+          data: simplifiedFormData,
+          success: (cloudResult) => {
+            console.log('云函数调用完成:', cloudResult);
+            handleCloudFunctionResult(cloudResult);
+          },
+          fail: (err) => {
+            console.error('addReview云函数调用失败:', err);
+            wx.hideLoading();
+            wx.showToast({
+              title: '操作失败: ' + (err.message || '未知错误'),
+              icon: 'none',
+              duration: 3000
+            });
+          }
+        });
+      }
+    };
+    
+    const handleCloudFunctionResult = (cloudResult) => {
+      console.log('处理云函数结果:', cloudResult);
+      wx.hideLoading();
+
+      if (cloudResult.result && !cloudResult.result.success) {
+        console.error('云函数返回错误:', cloudResult.result.error);
         wx.showToast({
-          title: '操作失败',
+          title: cloudResult.result.error || '操作失败',
           icon: 'none'
         });
-        console.error(err);
+        return;
+      }
+
+      console.log('点评提交成功');
+      wx.showToast({
+        title: this.data.isEdit ? '更新成功' : '提交成功',
+        icon: 'success'
       });
+
+      // 如果用户授权了订阅消息，发送订阅消息
+      if (isSubscribed) {
+        console.log('发送订阅消息');
+        this.sendSubscribeMessage(simplifiedFormData).then(() => {
+          console.log('订阅消息发送完成');
+          // 清空表单数据
+          console.log('清空表单数据');
+          this.formReset();
+
+          // 跳转回详情页或首页
+          console.log('准备跳转');
+          if (this.data.isEdit) {
+            console.log('跳转回详情页');
+            wx.navigateBack();
+          } else {
+            console.log('跳转到首页');
+            wx.switchTab({ url: '/pages/index/index' });
+          }
+        }).catch((err) => {
+          console.error('发送订阅消息失败:', err);
+          // 即使订阅消息发送失败，也继续执行后续操作
+          // 清空表单数据
+          console.log('清空表单数据');
+          this.formReset();
+
+          // 跳转回详情页或首页
+          console.log('准备跳转');
+          if (this.data.isEdit) {
+            console.log('跳转回详情页');
+            wx.navigateBack();
+          } else {
+            console.log('跳转到首页');
+            wx.switchTab({ url: '/pages/index/index' });
+          }
+        });
+      } else {
+        // 清空表单数据
+        console.log('清空表单数据');
+        this.formReset();
+
+        // 跳转回详情页或首页
+        console.log('准备跳转');
+        if (this.data.isEdit) {
+          console.log('跳转回详情页');
+          wx.navigateBack();
+        } else {
+          console.log('跳转到首页');
+          wx.switchTab({ url: '/pages/index/index' });
+        }
+      }
+    };
+    
+    // 开始上传图片
+    if (uploadTasks.length > 0) {
+      uploadNext();
+    } else {
+      // 没有图片需要上传
+      handleUploadComplete([]);
+    }
   },
   
-  // 发送订阅消息
-  sendSubscribeMessage() {
-    console.log('用户已授权，开始调用sendSubscribeMessage云函数');
-    
-    // 格式化时间为 YYYY-MM-DD HH:MM:SS 格式
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    const formattedTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    
-    wx.cloud.callFunction({
-      name: 'sendSubscribeMessage',
-      data: {
-        phrase1: '点评成功',
-        thing2: '您的点评已成功发布',
-        thing5: getApp().globalData.userInfo?.nickName || '用户',
+  // 发送订阅消息，返回 Promise
+  sendSubscribeMessage(formData) {
+    return new Promise((resolve, reject) => {
+      // 格式化时间为 YYYY-MM-DD HH:MM:SS 格式
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const formattedTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+      const nickName = getApp().globalData.userInfo?.nickName || 'User';
+      const shopName = formData.shopName || 'Unknown';
+      const rating = formData.rating || '';
+
+      // 构建订阅消息数据
+      const messageData = {
+        phrase1: '1',
+        thing2: shopName,
+        thing5: nickName,
         time6: formattedTime,
-        thing7: getApp().globalData.userInfo?.nickName || '用户'
-      },
-      success: function(res) {
-        console.log('云函数调用成功:', res);
-      },
-      fail: function(err) {
-        console.error('云函数调用失败:', err);
-      }
+        thing7: rating + ' Star'
+      };
+
+      console.log('调用sendSubscribeMessage云函数:', messageData);
+
+      wx.cloud.callFunction({
+        name: 'sendSubscribeMessage',
+        data: messageData,
+        success: function(res) {
+          console.log('=== 订阅消息云函数 success 回调 ===');
+          console.log('完整返回:', JSON.stringify(res));
+          console.log('result:', JSON.stringify(res.result));
+          resolve(res);
+        },
+        fail: function(err) {
+          console.log('=== 订阅消息云函数 fail 回调 ===');
+          console.error('fail错误:', JSON.stringify(err));
+          reject(err);
+        },
+        complete: function(res) {
+          console.log('=== 订阅消息云函数 complete 回调 ===');
+          console.log('complete返回:', JSON.stringify(res));
+        }
+      });
     });
   },
   
   formReset() {
+    // 保留当前的日期设置
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const todayDate = `${year}-${month}-${day}`;
+    
     this.setData({
       rating: 3.0,
       images: [],
-      diningTime: '',
-      selectedCategory: '美食'
+      diningTime: todayDate,
+      selectedCategory: '川菜',
+      shopName: '',
+      area: '',
+      city: '',
+      content: '',
+      expense: '',
+      people: '',
+      regionIndex: [-1, -1]
     });
   }
 });

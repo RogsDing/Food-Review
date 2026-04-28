@@ -137,13 +137,11 @@ Page({
     const regionIndex = e.detail.value;
     const province = this.data.regionOptions[0][regionIndex[0]];
     const city = this.data.regionOptions[1][regionIndex[1]];
-    const districts = this.data.allDistrictOptions[city] || [''];
-    const area = districts[0];
     this.setData({
       regionIndex: regionIndex,
       province: province,
       city: city,
-      area: area
+      area: city
     });
   },
   
@@ -158,7 +156,6 @@ Page({
       const selectedProvince = provinces[value];
       const cities = this.data.provinceCityMap[selectedProvince];
       const firstCity = cities[0];
-      const districts = this.data.allDistrictOptions[firstCity] || [''];
       
       // 更新regionOptions和regionIndex
       this.setData({
@@ -169,19 +166,18 @@ Page({
         regionIndex: [value, 0],
         province: selectedProvince,
         city: firstCity,
-        area: districts[0]
+        area: firstCity
       });
     } else if (column === 1) {
-      // 根据选择的城市更新区列表
+      // 根据选择的城市更新
       const cities = this.data.regionOptions[1];
       const selectedCity = cities[value];
-      const districts = this.data.allDistrictOptions[selectedCity] || [''];
       
       // 更新regionIndex和area
       this.setData({
         regionIndex: [this.data.regionIndex[0], value],
         city: selectedCity,
-        area: districts[0]
+        area: selectedCity
       });
     }
   },
@@ -208,24 +204,24 @@ Page({
               const cities = that.data.regionOptions[0];
               const cityIndex = cities.indexOf(city);
               if (cityIndex >= 0) {
-                // 根据定位到的城市获取对应的区列表
-                const districts = that.data.allDistrictOptions[cityIndex];
-                const districtIndex = districts.indexOf(district);
+                // 根据定位到的城市获取对应的城市列表
+                const cityList = that.data.provinceCityMap[cities[cityIndex]];
+                const cityListIndex = cityList.indexOf(city);
                 
                 // 更新regionOptions和regionIndex
                 that.setData({
                   regionOptions: [
                     that.data.regionOptions[0],
-                    districts
+                    cityList
                   ],
                   city: city,
-                  area: districtIndex >= 0 ? district : districts[0],
-                  regionIndex: [cityIndex, districtIndex >= 0 ? districtIndex : 0]
+                  area: city,
+                  regionIndex: [cityIndex, cityListIndex >= 0 ? cityListIndex : 0]
                 });
                 
-                if (districtIndex < 0) {
+                if (cityListIndex < 0) {
                   wx.showToast({
-                    title: '定位成功，但地区不在选项中，已选择该城市的默认地区',
+                    title: '定位成功，但城市不在选项中，已选择该省份的默认城市',
                     icon: 'none'
                   });
                 }
@@ -341,6 +337,29 @@ Page({
     });
   },
   
+  // 检查登录状态并提交表单
+  checkLoginAndSubmit(e) {
+    // 检查用户是否登录
+    if (!getApp().globalData.userInfo) {
+      wx.showModal({
+        title: '提示',
+        content: '请先登录后再编辑点评',
+        confirmText: '去登录',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            // 跳转到登录页面或触发登录流程
+            wx.switchTab({ url: '/pages/profile/profile' });
+          }
+        }
+      });
+      return;
+    }
+    
+    // 登录状态检查通过，执行表单提交
+    this.formSubmit(e);
+  },
+  
   formSubmit(e) {
     const formData = e.detail.value;
     formData.images = this.data.images;
@@ -386,8 +405,37 @@ Page({
       return;
     }
     
-    // 直接提交点评，不请求订阅消息授权
-    this.submitReview(formData, true);
+    if (!this.data.expense) {
+      wx.showToast({
+        title: '请输入消费金额',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    if (!this.data.people) {
+      wx.showToast({
+        title: '请输入消费人数',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 保存 formData 供后续发送订阅消息使用
+    this._submitFormData = formData;
+
+    // 请求订阅消息权限，通过后提交点评
+    const templateId = 'mPBTma8iiO0plnhED029wfU2t2uxx151nGel5YoP80A';
+    wx.requestSubscribeMessage({
+      tmplIds: [templateId],
+      success: (res) => {
+        const accepted = res[templateId] === 'accept';
+        this.submitReview(formData, accepted);
+      },
+      fail: () => {
+        this.submitReview(formData, false);
+      }
+    });
   },
   
   // 提交点评数据
@@ -405,7 +453,20 @@ Page({
             cloudPath: 'review/images/' + Date.now() + '_' + index + '.png',
             filePath: image,
             success: res => {
-              resolve(res.fileID);
+              // 上传成功后，设置文件权限为公开读
+              wx.cloud.updateFileACL({
+                fileID: res.fileID,
+                acl: {
+                  read: true
+                },
+                success: () => {
+                  resolve(res.fileID);
+                },
+                fail: err => {
+                  console.error('设置文件权限失败:', err);
+                  resolve(res.fileID);
+                }
+              });
             },
             fail: err => {
               reject(err);
@@ -439,26 +500,43 @@ Page({
           });
         }
       })
-      .then(res => {
+      .then((res) => {
         wx.hideLoading();
+
+        if (res.result && !res.result.success) {
+          wx.showToast({
+            title: res.result.error || '操作失败',
+            icon: 'none'
+          });
+          return;
+        }
+
         wx.showToast({
           title: this.data.isEdit ? '更新成功' : '提交成功',
           icon: 'success'
         });
-        
-        // 如果用户授权了订阅消息，则发送通知
+
+        // 如果用户授权了订阅消息，发送订阅消息
         if (isSubscribed) {
-          this.sendSubscribeMessage();
+          return this.sendSubscribeMessage(this._submitFormData).then(() => {
+            // 订阅消息发送成功
+            return true;
+          }).catch((err) => {
+            // 订阅消息发送失败，仍然继续执行
+            console.error('发送订阅消息失败:', err);
+            return true;
+          });
+        } else {
+          return true;
         }
-        
+      })
+      .then(() => {
         // 跳转回详情页或首页
-        setTimeout(() => {
-          if (this.data.isEdit) {
-            wx.navigateBack();
-          } else {
-            wx.switchTab({ url: '/pages/index/index' });
-          }
-        }, 1000);
+        if (this.data.isEdit) {
+          wx.navigateBack();
+        } else {
+          wx.switchTab({ url: '/pages/index/index' });
+        }
       })
       .catch(err => {
         wx.hideLoading();
@@ -470,35 +548,49 @@ Page({
       });
   },
   
-  // 发送订阅消息
-  sendSubscribeMessage() {
-    console.log('用户已授权，开始调用sendSubscribeMessage云函数');
-    
-    // 格式化时间为 YYYY-MM-DD HH:MM:SS 格式
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    const formattedTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    
-    wx.cloud.callFunction({
-      name: 'sendSubscribeMessage',
-      data: {
-        phrase1: '点评成功',
-        thing2: '您的点评已成功发布',
-        thing5: getApp().globalData.userInfo?.nickName || '用户',
-        time6: formattedTime,
-        thing7: getApp().globalData.userInfo?.nickName || '用户'
-      },
-      success: function(res) {
-        console.log('云函数调用成功:', res);
-      },
-      fail: function(err) {
-        console.error('云函数调用失败:', err);
-      }
+  // 发送订阅消息，返回 Promise
+  sendSubscribeMessage(formData) {
+    return new Promise((resolve, reject) => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const formattedTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+      const nickName = getApp().globalData.userInfo?.nickName || 'User';
+      const shopName = formData.shopName || 'Unknown';
+      const rating = formData.rating || '';
+
+      console.log('调用sendSubscribeMessage云函数:', { phrase1: 'Review Updated', thing2: shopName, thing5: nickName, time6: formattedTime, thing7: rating + ' Star' });
+
+      wx.cloud.callFunction({
+        name: 'sendSubscribeMessage',
+        data: {
+          phrase1: '1',
+          thing2: shopName,
+          thing5: nickName,
+          time6: formattedTime,
+          thing7: rating + ' Star'
+        },
+        success: function(res) {
+          console.log('=== 订阅消息云函数 success 回调 ===');
+          console.log('完整返回:', JSON.stringify(res));
+          console.log('result:', JSON.stringify(res.result));
+          resolve(res);
+        },
+        fail: function(err) {
+          console.log('=== 订阅消息云函数 fail 回调 ===');
+          console.error('fail错误:', JSON.stringify(err));
+          reject(err);
+        },
+        complete: function(res) {
+          console.log('=== 订阅消息云函数 complete 回调 ===');
+          console.log('complete返回:', JSON.stringify(res));
+        }
+      });
     });
   },
   

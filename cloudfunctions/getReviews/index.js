@@ -17,8 +17,8 @@ exports.main = async (event, context) => {
     let query = db.collection('reviews')
     
     // 按地区筛选
-    if (event.area) {
-      query = query.where({ area: event.area })
+    if (event.city) {
+      query = query.where({ city: event.city })
     }
     
     // 按分类筛选
@@ -42,6 +42,11 @@ exports.main = async (event, context) => {
           })
         }
       ]))
+    }
+    
+    // 按用户筛选（我的点评）
+    if (event.type === 'my') {
+      query = query.where({ openId: wxContext.OPENID })
     }
     
     // 排序

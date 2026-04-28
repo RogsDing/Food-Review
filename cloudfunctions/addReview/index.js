@@ -16,6 +16,7 @@ exports.main = async (event, context) => {
     const reviewData = {
       shopName: event.shopName,
       area: event.area,
+      city: event.city,
       diningTime: event.diningTime,
       rating: event.rating,
       content: event.content,

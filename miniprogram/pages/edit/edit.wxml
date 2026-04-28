@@ -1,5 +1,5 @@
 <view class="container">
-  <form bindsubmit="formSubmit" bindreset="formReset">
+  <form bindsubmit="checkLoginAndSubmit" bindreset="formReset">
     <view class="form-section">
       <view class="form-item">
         <text class="form-label">店铺名称</text>
