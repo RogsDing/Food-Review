@@ -6,7 +6,7 @@ Page({
     showSort: false,
     showArea: false,
     showCategory: false,
-    categories: ['全部分类', '川菜', '湘菜', '江西菜', '自助', '韩料', '日料', '西餐', '火锅', '烧烤'],
+    categories: ['全部分类', '川菜', '湘菜', '江西菜', '自助', '韩料', '日料', '西餐', '火锅', '烧烤', '其他'],
     sortBy: 'rating',
     sortOrder: 'desc',
     area: '',
@@ -71,7 +71,14 @@ Page({
   },
   
   onShow: function () {
-    this.getReviews(this.data.type);
+    const app = getApp();
+    if (app.globalData.reviewType) {
+      this.setData({ type: app.globalData.reviewType });
+      this.getReviews(app.globalData.reviewType);
+      app.globalData.reviewType = '';
+    } else {
+      this.getReviews(this.data.type);
+    }
   },
   
   getReviews: function (type) {
@@ -95,15 +102,32 @@ Page({
     .then(res => {
       wx.hideLoading();
       if (res.result) {
+        console.log('[index] getReviews 返回数据条数:', res.result.length)
+        if (res.result.length > 0) {
+          console.log('[index] 第一条点评完整数据:', JSON.stringify(res.result[0]))
+          console.log('[index] 第一条点评 author:', JSON.stringify(res.result[0].author))
+          console.log('[index] 第一条点评 openId:', res.result[0].openId)
+          console.log('[index] 第一条点评 author.avatarUrl:', res.result[0].author?.avatarUrl)
+          console.log('[index] 第一条点评 author.nickName:', res.result[0].author?.nickName)
+        }
+        
         // 为每个点评添加一些默认数据，使其更符合大众点评的展示格式
         const reviews = res.result.map(item => ({
           ...item,
           averagePrice: item.expense && item.people ? Math.floor(Number(item.expense) / Number(item.people)) : Math.floor(Math.random() * 100) + 50, // 根据消费金额和人数计算人均价格
           monthlySales: item.monthlySales || Math.floor(Math.random() * 1000) + 100, // 随机生成月售数量
-          category: item.category || ['川菜', '湘菜', '江西菜', '自助', '韩料', '日料', '西餐', '火锅', '烧烤'][Math.floor(Math.random() * 9)], // 随机生成分类
+          category: item.category || ['川菜', '湘菜', '江西菜', '自助', '韩料', '日料', '西餐', '火锅', '烧烤', '其他'][Math.floor(Math.random() * 10)], // 随机生成分类
           distance: item.distance || (Math.random() * 3 + 0.5).toFixed(1) + 'km', // 随机生成距离
           address: item.address || item.city
         }));
+        
+        console.log('[index] 处理后的 reviews 数据:')
+        reviews.forEach((review, index) => {
+          if (index < 3) { // 只打印前3条，避免日志过多
+            console.log('[index] review[' + index + '] author:', JSON.stringify(review.author))
+            console.log('[index] review[' + index + '] author.avatarUrl:', review.author?.avatarUrl)
+          }
+        })
         
         // 处理图片链接
         this.processImageUrls(reviews);
@@ -127,14 +151,23 @@ Page({
   processImageUrls: function(reviews) {
     // 收集所有图片的fileID
     const allFileIDs = [];
+    
+    // 收集点评图片
     reviews.forEach(review => {
       if (review.imageFileIDs && review.imageFileIDs.length > 0) {
         review.imageFileIDs.forEach(fileID => {
           allFileIDs.push(fileID);
         });
       }
+      
+      // 收集用户头像（只收集 cloud:// 格式的）
+      if (review.author && review.author.avatarUrl && 
+          review.author.avatarUrl.startsWith('cloud://')) {
+        allFileIDs.push(review.author.avatarUrl);
+      }
     });
     
+    console.log('[index] 需要转换的文件数:', allFileIDs.length)
     if (allFileIDs.length > 0) {
       // 调用云函数获取临时链接
       wx.cloud.callFunction({
@@ -150,19 +183,42 @@ Page({
             tempUrls[item.fileID] = item.tempFileURL;
           });
           
-          // 更新点评列表中的图片链接
+          console.log('[index] 成功转换临时链接数:', Object.keys(tempUrls).length)
+          
+          // 更新点评列表中的图片链接和用户头像
           const updatedReviews = reviews.map(review => {
-            if (review.imageFileIDs && review.imageFileIDs.length > 0) {
-              const updatedImageFileIDs = review.imageFileIDs.map(fileID => {
+            let updatedReview = { ...review };
+            
+            // 更新点评图片
+            if (updatedReview.imageFileIDs && updatedReview.imageFileIDs.length > 0) {
+              const updatedImageFileIDs = updatedReview.imageFileIDs.map(fileID => {
                 return tempUrls[fileID] || fileID;
               });
-              return {
-                ...review,
-                imageFileIDs: updatedImageFileIDs
-              };
+              updatedReview.imageFileIDs = updatedImageFileIDs;
             }
-            return review;
+            
+            // 更新用户头像
+            if (updatedReview.author && updatedReview.author.avatarUrl && 
+                updatedReview.author.avatarUrl.startsWith('cloud://')) {
+              const avatarTempUrl = tempUrls[updatedReview.author.avatarUrl];
+              if (avatarTempUrl) {
+                updatedReview = {
+                  ...updatedReview,
+                  author: {
+                    ...updatedReview.author,
+                    avatarUrl: avatarTempUrl
+                  }
+                };
+              }
+            }
+            
+            return updatedReview;
           });
+          
+          console.log('[index] 头像转换完成，示例:')
+          updatedReviews.slice(0, 3).forEach((review, i) => {
+            console.log('[index] review[' + i + '] 头像:', review.author?.avatarUrl?.substring(0, 50) + '...')
+          })
           
           this.setData({
             reviews: updatedReviews
@@ -172,6 +228,8 @@ Page({
       .catch(err => {
         console.error('获取图片链接失败:', err);
       });
+    } else {
+      console.log('[index] 没有需要转换的文件')
     }
   },
   

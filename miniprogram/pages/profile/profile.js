@@ -4,15 +4,11 @@ Page({
     reviewCount: 0,
     showEditModal: false,
     tempAvatarUrl: '',
-    isLoggingIn: false
+    isLoggingIn: false,
+    showAboutModal: false
   },
   
   onLoad: function () {
-    this.getUserInfo();
-    this.getReviewCount();
-  },
-  
-  onShow: function () {
     this.getUserInfo();
     this.getReviewCount();
   },
@@ -90,79 +86,75 @@ Page({
   login: function () {
     wx.showLoading({ title: '登录中...' });
     
+    console.log('[login] 开始登录流程');
+    
     // 调用wx.login获取code
     wx.login({
       success: (loginRes) => {
+        console.log('[login] wx.login成功, code=', loginRes.code ? '有值' : '无值');
         if (loginRes.code) {
           // 检查本地存储中是否已有用户信息
           const storedUserInfo = wx.getStorageSync('userInfo');
+          console.log('[login] 本地存储的userInfo:', JSON.stringify(storedUserInfo));
           const needCompleteProfile = !storedUserInfo || !storedUserInfo.nickName || !storedUserInfo.avatarUrl;
+          console.log('[login] needCompleteProfile=', needCompleteProfile);
           
-          // 模拟后端登录接口返回
-          setTimeout(() => {
+          // 调用登录云函数，同步用户信息到云数据库
+          console.log('[login] 准备调用云函数login, data=', JSON.stringify({ userInfo: storedUserInfo || {} }));
+          wx.cloud.callFunction({
+            name: 'login',
+            data: {
+              userInfo: storedUserInfo || {}
+            }
+          }).then(res => {
+            console.log('[login] 云函数返回:', JSON.stringify(res));
             wx.hideLoading();
             
-            // 模拟返回数据
-            const mockData = {
-              success: true,
-              data: {
-                needCompleteProfile: needCompleteProfile,
-                userInfo: storedUserInfo || {
-                  nickName: '',
-                  avatarUrl: ''
-                },
-                openId: storedUserInfo?.openId || 'mock_openid_' + Date.now()
-              }
-            };
-            
-            console.log('模拟后端登录接口返回:', mockData);
-            
-            if (mockData.success) {
-              const data = mockData.data;
-              
-              // 存储Token
-              if (data.token) {
-                wx.setStorageSync('token', data.token);
-              }
+            if (res.result && res.result.success) {
+              const cloudUserInfo = res.result.userInfo;
+              console.log('[login] 登录成功, cloudUserInfo=', JSON.stringify(cloudUserInfo));
               
               // 判断是否需要完善资料
-              if (data.needCompleteProfile) {
+              if (needCompleteProfile) {
                 // 需要完善资料，显示模态框
                 this.setData({
                   userInfo: {
                     nickName: '',
                     avatarUrl: '',
-                    openId: data.openId
+                    openId: cloudUserInfo.openId
                   },
                   showEditModal: true,
                   isLoggingIn: true
                 });
               } else {
                 // 资料完整，直接登录成功
-                const userInfo = {
-                  ...(data.userInfo || {}),
-                  openId: data.openId
-                };
-                this.saveUserInfo(userInfo);
+                this.saveUserInfo(cloudUserInfo);
                 this.setData({ 
                   showEditModal: false, 
                   isLoggingIn: false 
                 });
                 wx.showToast({ title: '登录成功', icon: 'success' });
-                // 登录成功后更新点评数
                 this.getReviewCount();
               }
             } else {
+              console.error('[login] 云函数返回失败, res.result=', JSON.stringify(res.result));
               wx.showToast({ title: '登录失败', icon: 'none' });
             }
-          }, 1000);
+          }).catch(err => {
+            console.error('[login] 登录云函数调用失败:', err);
+            wx.hideLoading();
+            console.error('登录云函数调用失败:', err);
+            wx.showToast({ title: '登录失败', icon: 'none' });
+          });
         } else {
+          console.error('[login] 获取code失败:', loginRes);
           wx.hideLoading();
           console.error('获取code失败:', loginRes);
           wx.showToast({ title: '登录失败', icon: 'none' });
         }
       },
       fail: (err) => {
+        console.error('[login] wx.login失败:', err);
         wx.hideLoading();
         console.error('wx.login失败:', err);
         wx.showToast({ title: '登录失败', icon: 'none' });
@@ -231,7 +223,7 @@ Page({
   },
   
   saveUserProfile: function () {
-    const userInfo = this.data.userInfo;
+    const userInfo = { ...this.data.userInfo };
     if (!userInfo.nickName) {
       wx.showToast({ title: '请输入昵称', icon: 'none' });
       return;
@@ -239,30 +231,68 @@ Page({
     
     wx.showLoading({ title: '保存中...' });
     
-    const tempAvatarUrl = this.data.tempAvatarUrl;
+    const avatarUrl = userInfo.avatarUrl;
     
-    if (tempAvatarUrl) {
-      this.uploadAvatarToServer(tempAvatarUrl, (avatarUrl) => {
-        this.submitUserInfo({ ...userInfo, avatarUrl });
+    if (avatarUrl) {
+      // 如果已经是云存储地址，无需重新上传
+      if (avatarUrl.startsWith('cloud://')) {
+        this.submitUserInfo(userInfo);
+        return;
+      }
+      this.uploadAvatarToServer(avatarUrl, userInfo, (finalUserInfo) => {
+        this.submitUserInfo(finalUserInfo);
       });
     } else {
       this.submitUserInfo(userInfo);
     }
   },
   
-  uploadAvatarToServer: function (tempFilePath, callback) {
-    // 上传头像到云存储
+  uploadAvatarToServer: function (tempFilePath, userInfo, callback) {
+    const that = this;
+    // 如果是远程HTTP URL（如微信头像），先下载再上传到云存储
+    if (tempFilePath && (tempFilePath.startsWith('http://') || tempFilePath.startsWith('https://'))) {
+      wx.downloadFile({
+        url: tempFilePath,
+        success: (downloadRes) => {
+          if (downloadRes.statusCode === 200) {
+            wx.cloud.uploadFile({
+              cloudPath: 'user/avatars/' + Date.now() + '.png',
+              filePath: downloadRes.tempFilePath,
+              success: (uploadRes) => {
+                callback({ ...userInfo, avatarUrl: uploadRes.fileID });
+              },
+              fail: (err) => {
+                console.error('上传头像失败:', err);
+                wx.showToast({ title: '头像上传失败', icon: 'none' });
+                callback({ ...userInfo, avatarUrl: '' });
+              }
+            });
+          } else {
+            console.error('下载头像失败, statusCode:', downloadRes.statusCode);
+            wx.showToast({ title: '头像下载失败', icon: 'none' });
+            callback({ ...userInfo, avatarUrl: '' });
+          }
+        },
+        fail: (err) => {
+          console.error('下载头像失败:', err);
+          wx.showToast({ title: '头像下载失败', icon: 'none' });
+          callback({ ...userInfo, avatarUrl: '' });
+        }
+      });
+      return;
+    }
+    
+    // 本地文件直接上传到云存储
     wx.cloud.uploadFile({
       cloudPath: 'user/avatars/' + Date.now() + '.png',
       filePath: tempFilePath,
       success: (res) => {
-        const avatarUrl = res.fileID;
-        callback(avatarUrl);
+        callback({ ...userInfo, avatarUrl: res.fileID });
       },
       fail: (err) => {
         console.error('上传头像失败:', err);
         wx.showToast({ title: '头像上传失败', icon: 'none' });
-        this.submitUserInfo({ ...this.data.userInfo, avatarUrl: '' });
+        callback({ ...userInfo, avatarUrl: '' });
       }
     });
   },
@@ -270,38 +300,31 @@ Page({
   submitUserInfo: function (userInfo) {
     const isLoggingIn = this.data.isLoggingIn;
     
-    // 模拟后端更新信息接口返回
-    setTimeout(() => {
+    // 调用登录云函数，将用户信息同步到云数据库
+    wx.cloud.callFunction({
+      name: 'login',
+      data: {
+        userInfo: userInfo
+      }
+    }).then(res => {
       wx.hideLoading();
       
-      // 模拟返回数据
-      const mockData = {
-        success: true,
-        data: {
-          userInfo: userInfo,
-          openId: userInfo.openId || 'mock_openid_' + Date.now()
-        }
-      };
-      
-      console.log('模拟后端更新信息接口返回:', mockData);
-      
-      if (mockData.success) {
-        const updatedUserInfo = {
-          ...(mockData.data.userInfo || userInfo),
-          openId: mockData.data.openId
-        };
-        // 将最新的头像和昵称覆盖到本地缓存
+      if (res.result && res.result.success) {
+        const updatedUserInfo = res.result.userInfo;
         this.saveUserInfo(updatedUserInfo);
         this.setData({ showEditModal: false, isLoggingIn: false });
         wx.showToast({ title: isLoggingIn ? '登录成功' : '保存成功', icon: 'success' });
-        // 登录成功后更新点评数
         if (isLoggingIn) {
           this.getReviewCount();
         }
       } else {
         wx.showToast({ title: '保存失败', icon: 'none' });
       }
-    }, 1000);
+    }).catch(err => {
+      wx.hideLoading();
+      console.error('保存用户信息失败:', err);
+      wx.showToast({ title: '保存失败', icon: 'none' });
+    });
   },
   
 
@@ -309,8 +332,10 @@ Page({
 
   
   goToMyReviews: function () {
-    wx.navigateTo({
-      url: '/pages/index/index?type=my'
+    const app = getApp();
+    app.globalData.reviewType = 'my';
+    wx.switchTab({
+      url: '/pages/index/index'
     });
   },
   
@@ -321,9 +346,18 @@ Page({
   },
   
   goToAbout: function () {
-    wx.showToast({
-      title: '关于我们功能开发中',
-      icon: 'none'
+    this.setData({
+      showAboutModal: true
     });
-  }
+  },
+  
+  closeAboutModal: function () {
+    this.setData({
+      showAboutModal: false
+    });
+  },
+  
+  catchTap: function () {
+    // 阻止事件冒泡
+  },
 });

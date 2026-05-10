@@ -1,6 +1,7 @@
 Page({
   data: {
-    notificationEnabled: true
+    notificationEnabled: true,
+    showAboutModal: false
   },
   
   onLoad: function () {
@@ -69,11 +70,19 @@ Page({
   },
   
   goToAbout: function () {
-    wx.showModal({
-      title: '关于我们',
-      content: '美食点评小程序 v1.0.0\n\n一个帮助您记录和管理美食体验的工具\n\n© 2026 美食点评',
-      showCancel: false
+    this.setData({
+      showAboutModal: true
     });
+  },
+  
+  closeAboutModal: function () {
+    this.setData({
+      showAboutModal: false
+    });
+  },
+  
+  catchTap: function () {
+    // 阻止事件冒泡
   },
   
   logout: function () {
@@ -85,6 +94,7 @@ Page({
           wx.removeStorageSync('userInfo');
           wx.removeStorageSync('openId');
           getApp().globalData.userInfo = null;
+          getApp().globalData.openId = null;
           
           wx.showToast({
             title: '已退出登录',

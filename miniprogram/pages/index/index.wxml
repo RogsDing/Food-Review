@@ -46,6 +46,10 @@
         <view class="category-icon">🍖</view>
         <text class="category-text">烧烤</text>
       </view>
+      <view class="category-item" bindtap="selectCategory" data-category="其他">
+        <view class="category-icon">🍽️</view>
+        <text class="category-text">其他</text>
+      </view>
     </view>
   </view>
   
@@ -119,8 +123,12 @@
           </view>
           <view class="shop-tags">
             <text class="shop-tag">{{item.category || '美食'}}</text>
-            <view class="shop-address-container">
+            <view class="shop-tags-right">
               <text class="shop-address">{{item.address}}</text>
+              <view class="author-info">
+                <image class="author-avatar" src="{{item.author.avatarUrl || '/images/avatar.png'}}" mode="aspectFill" />
+                <text class="author-name">{{item.author.nickName || '微信用户'}}</text>
+              </view>
             </view>
           </view>
         </view>

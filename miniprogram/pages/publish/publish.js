@@ -5,8 +5,8 @@ Page({
     diningTime: '',
     isEdit: false,
     reviewId: '',
-    categories: ['川菜', '湘菜', '江西菜', '自助', '韩料', '日料', '西餐', '火锅', '烧烤'],
-    selectedCategory: '川菜',
+    categories: ['川菜', '湘菜', '江西菜', '自助', '韩料', '日料', '西餐', '火锅', '烧烤', '其他'],
+    selectedCategory: '',
     expense: '',
     people: '',
     regionOptions: [
@@ -307,7 +307,8 @@ Page({
       '日料': '🍱',
       '西餐': '🍔',
       '火锅': '🥘',
-      '烧烤': '🍖'
+      '烧烤': '🍖',
+      '其他': '🍽️'
     };
     return iconMap[category] || '🍽️';
   },
@@ -321,16 +322,21 @@ Page({
 
   // 消费金额输入事件
   onExpenseInput(e) {
-    this.setData({
-      expense: e.detail.value
-    });
+    const value = e.detail.value;
+    const filtered = value.replace(/[^\d.]/g, '');
+    const parts = filtered.split('.');
+    let sanitized = parts[0];
+    if (parts.length > 1) {
+      sanitized += '.' + parts[1].slice(0, 2);
+    }
+    this.setData({ expense: sanitized });
   },
 
   // 消费人数输入事件
   onPeopleInput(e) {
-    this.setData({
-      people: e.detail.value
-    });
+    const value = e.detail.value;
+    const filtered = value.replace(/\D/g, '');
+    this.setData({ people: filtered });
   },
   
   chooseImage() {
@@ -402,6 +408,14 @@ Page({
     if (!formData.shopName) {
       wx.showToast({
         title: '请输入店铺名称',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    if (!this.data.selectedCategory) {
+      wx.showToast({
+        title: '请选择类别',
         icon: 'none'
       });
       return;
@@ -555,6 +569,10 @@ Page({
     const handleUploadComplete = (uploadedFileIDs) => {
       console.log('处理图片上传完成:', uploadedFileIDs);
       
+      // 获取当前用户信息
+      const app = getApp();
+      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo') || {};
+      
       // 简化formData，只传递必要的参数
       simplifiedFormData = {
         shopName: formData.shopName,
@@ -567,7 +585,11 @@ Page({
         createTime: formData.createTime,
         category: formData.category,
         expense: formData.expense,
-        people: formData.people
+        people: formData.people,
+        author: {
+          nickName: userInfo.nickName || '微信用户',
+          avatarUrl: userInfo.avatarUrl || ''
+        }
       };
       
       console.log('简化后的formData:', simplifiedFormData);
@@ -766,7 +788,7 @@ Page({
       rating: 3.0,
       images: [],
       diningTime: todayDate,
-      selectedCategory: '川菜',
+      selectedCategory: '',
       shopName: '',
       area: '',
       city: '',

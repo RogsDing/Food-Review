@@ -42,7 +42,8 @@ exports.main = async (event, context) => {
       updateTime: new Date().toISOString(),
       expense: updateData.expense,
       people: updateData.people,
-      category: updateData.category
+      category: updateData.category,
+      author: updateData.author || review.data.author || { nickName: '微信用户', avatarUrl: '' }
     }
     
     // 更新数据到数据库

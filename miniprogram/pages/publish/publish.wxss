@@ -24,6 +24,11 @@
   color: #333;
 }
 
+.required {
+  color: #ff6b00;
+  margin-left: 4rpx;
+}
+
 .form-input {
   width: 100%;
   height: 80rpx;
@@ -261,6 +266,13 @@
   font-size: 24rpx;
   color: #333;
   text-align: center;
+}
+
+.category-hint {
+  display: block;
+  font-size: 24rpx;
+  color: #ff6b00;
+  margin-top: 12rpx;
 }
 
 .image-upload {

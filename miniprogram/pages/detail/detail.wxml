@@ -1,5 +1,10 @@
 <view class="container">
   <view class="detail-header">
+    <!-- 发布者信息 -->
+    <view class="author-info">
+      <image class="author-avatar" src="{{review.author.avatarUrl || '/images/avatar.png'}}" mode="aspectFill" />
+      <text class="author-name">{{review.author.nickName || '微信用户'}}</text>
+    </view>
     <text class="detail-shop-name">{{review.shopName}}</text>
     <view class="detail-meta">
       <view class="review-rating">

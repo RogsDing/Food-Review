@@ -11,6 +11,29 @@
   box-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.05);
 }
 
+/* 发布者信息 */
+.author-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+  gap: 12rpx;
+}
+
+.author-avatar {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.author-name {
+  font-size: 24rpx;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .detail-shop-name {
   font-size: 36rpx;
   font-weight: 600;

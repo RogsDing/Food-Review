@@ -61,6 +61,7 @@ Page({
         ];
         const searchResults = res.result.map(item => ({
           ...item,
+          author: item.author || { nickName: '微信用户', avatarUrl: '' },
           averagePrice: item.averagePrice || Math.floor(Math.random() * 100) + 50,
           monthlySales: item.monthlySales || Math.floor(Math.random() * 1000) + 100,
           category: item.category || ['美食', '咖啡', '甜点', '酒吧', '面食', '日料', '西餐', '火锅'][Math.floor(Math.random() * 8)],
@@ -68,6 +69,9 @@ Page({
           address: item.address || item.area + '街道',
           imageFileIDs: item.imageFileIDs && item.imageFileIDs.length > 0 ? item.imageFileIDs : [defaultImages[Math.floor(Math.random() * defaultImages.length)]]
         }));
+        // 处理用户头像
+        this.processAvatarUrls(searchResults);
+
         this.setData({
           searchResults: searchResults,
           showResults: true
@@ -155,5 +159,52 @@ Page({
     wx.navigateTo({
       url: '/pages/detail/detail?id=' + reviewId
     });
+  },
+
+  // 处理用户头像链接
+  processAvatarUrls: function(reviews) {
+    const avatarFileIDs = [];
+    reviews.forEach(review => {
+      if (review.author && review.author.avatarUrl && review.author.avatarUrl.startsWith('cloud://')) {
+        avatarFileIDs.push(review.author.avatarUrl);
+      }
+    });
+
+    if (avatarFileIDs.length > 0) {
+      wx.cloud.callFunction({
+        name: 'getImageUrl',
+        data: {
+          fileList: avatarFileIDs
+        }
+      })
+      .then(res => {
+        if (res.result && res.result.success) {
+          const tempUrls = {};
+          res.result.data.forEach(item => {
+            tempUrls[item.fileID] = item.tempFileURL;
+          });
+
+          const updatedResults = reviews.map(review => {
+            if (review.author && review.author.avatarUrl && tempUrls[review.author.avatarUrl]) {
+              return {
+                ...review,
+                author: {
+                  ...review.author,
+                  avatarUrl: tempUrls[review.author.avatarUrl]
+                }
+              };
+            }
+            return review;
+          });
+
+          this.setData({
+            searchResults: updatedResults
+          });
+        }
+      })
+      .catch(err => {
+        console.error('获取头像链接失败:', err);
+      });
+    }
   }
 });

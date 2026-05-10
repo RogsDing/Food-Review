@@ -160,3 +160,128 @@
     font-size: 26rpx;
   }
 }
+
+/* 自定义弹窗样式 */
+.custom-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  width: 80%;
+  max-width: 560rpx;
+  background-color: #fff;
+  border-radius: 20rpx;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+.modal-header {
+  padding: 32rpx;
+  text-align: center;
+  border-bottom: 1rpx solid #f0f0f0;
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #fff;
+}
+
+.modal-body {
+  padding: 40rpx 32rpx;
+  text-align: center;
+}
+
+.about-logo {
+  font-size: 80rpx;
+  margin-bottom: 24rpx;
+}
+
+.modal-text {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.8;
+  margin-bottom: 16rpx;
+}
+
+.modal-text.title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.modal-text.version {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 24rpx;
+}
+
+.modal-text.copyright {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 24rpx;
+}
+
+.modal-footer {
+  padding: 24rpx 32rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.modal-btn {
+  width: 100%;
+  height: 88rpx;
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 500;
+  border-radius: 44rpx;
+  border: none;
+  box-shadow: 0 4rpx 12rpx rgba(255, 107, 0, 0.3);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-btn:hover {
+  transform: translateY(-2rpx);
+  box-shadow: 0 6rpx 16rpx rgba(255, 107, 0, 0.4);
+}
+
+.modal-btn::after {
+  border: none;
+}
+
+/* 弹窗动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
