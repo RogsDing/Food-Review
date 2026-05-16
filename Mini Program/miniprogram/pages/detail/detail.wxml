@@ -1,0 +1,71 @@
+<view class="container">
+  <view class="detail-header">
+    <!-- 发布者信息 -->
+    <view class="author-info">
+      <image class="author-avatar" src="{{review.author.avatarUrl || '/images/avatar.png'}}" mode="aspectFill" />
+      <text class="author-name">{{review.author.nickName || '微信用户'}}</text>
+    </view>
+    <text class="detail-shop-name">{{review.shopName}}</text>
+    <view class="detail-meta">
+      <view class="review-rating">
+        <view wx:for="{{5}}" wx:key="*this" 
+              class="star {{index < review.rating ? 'active' : ''}}">
+        </view>
+      </view>
+      <text>{{review.area}}</text>
+      <text>{{review.diningTime}}</text>
+    </view>
+  </view>
+  
+  <view class="detail-content">
+    <text class="detail-text">{{review.content}}</text>
+    <view class="detail-images" wx:if="{{review.imageFileIDs && review.imageFileIDs.length > 0}}">
+      <view wx:for="{{review.imageFileIDs}}" wx:key="*this" class="detail-image">
+        <image src="{{item}}" mode="aspectFill" bindtap="previewImage" data-index="{{index}}" />
+      </view>
+    </view>
+
+    <view class="detail-actions" wx:if="{{isAuthor}}">
+      <button class="action-btn" bindtap="deleteReview">删除</button>
+      <button class="action-btn primary" bindtap="editReview">编辑</button>
+    </view>
+  </view>
+  
+  <view class="comment-section">
+    <view class="comment-header">
+      <text class="comment-title">评论 ({{commentCount}})</text>
+    </view>
+
+    <view class="comment-list" wx:if="{{comments.length > 0}}">
+      <view class="comment-item" wx:for="{{comments}}" wx:key="_id">
+        <image class="comment-avatar" src="{{item.author.avatarUrl || '/images/avatar.png'}}" mode="aspectFill" />
+        <view class="comment-body">
+          <view class="comment-top">
+            <text class="comment-nickname">{{item.author.nickName || '微信用户'}}</text>
+            <view class="comment-delete" wx:if="{{item.isAuthor}}" bindtap="deleteComment" data-id="{{item._id}}">删除</view>
+          </view>
+          <text class="comment-text">{{item.content}}</text>
+          <text class="comment-time">{{item.createTime}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="comment-empty" wx:else>
+      <text class="comment-empty-text">暂无评论，快来抢沙发~</text>
+    </view>
+  </view>
+
+  <view class="comment-input-bar">
+    <input 
+      class="comment-input" 
+      placeholder="{{isLoggedIn ? '写评论...' : '登录后可评论'}}" 
+      value="{{commentContent}}" 
+      bindinput="onCommentInput"
+      disabled="{{!isLoggedIn}}"
+      maxlength="200"
+      confirm-type="send"
+      bindconfirm="submitComment"
+    />
+    <button class="comment-send-btn" bindtap="submitComment">发送</button>
+  </view>
+</view>

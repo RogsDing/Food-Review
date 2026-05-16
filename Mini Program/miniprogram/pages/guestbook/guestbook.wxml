@@ -1,0 +1,47 @@
+<view class="container">
+  <view class="header">
+    <text class="header-title">留言板</text>
+    <text class="header-subtitle">留下您的足迹</text>
+  </view>
+
+  <view class="message-input-section">
+    <textarea class="message-input" placeholder="请输入留言内容..." maxlength="500" value="{{messageContent}}" bindinput="onMessageInput" auto-height />
+    <view class="input-footer">
+      <text class="char-count">{{messageContent.length}}/500</text>
+      <button class="submit-btn {{messageContent.trim() ? 'active' : ''}}" bindtap="submitMessage" disabled="{{!messageContent.trim()}}">发布</button>
+    </view>
+  </view>
+
+  <view class="divider"></view>
+
+  <view class="message-list">
+    <view class="list-header">
+      <text class="list-title">全部留言</text>
+      <text class="list-count">{{messages.length}}条</text>
+    </view>
+
+    <view wx:if="{{messages.length === 0 && !loading}}" class="empty-state">
+      <text class="empty-icon">💬</text>
+      <text class="empty-text">暂无留言</text>
+      <text class="empty-hint">成为第一个留言的人吧~</text>
+    </view>
+
+    <view wx:if="{{loading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+
+    <view wx:for="{{messages}}" wx:key="_id" class="message-item">
+      <view class="message-header">
+        <image class="message-avatar" src="{{item.userInfo.avatarUrl || '/images/avatar.png'}}" mode="aspectFill" />
+        <view class="message-info">
+          <text class="message-nickname">{{item.userInfo.nickName || '匿名用户'}}</text>
+          <text class="message-time">{{item.timeStr}}</text>
+        </view>
+        <view wx:if="{{item.canDelete}}" class="delete-btn" bindtap="deleteMessage" data-id="{{item._id}}">
+          <text>删除</text>
+        </view>
+      </view>
+      <view class="message-content">{{item.content}}</view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,87 @@
+<view class="container">
+  <view class="search-bar" bindtap="goToSearch">
+    <view class="search-input">
+      <text class="search-icon">🔍</text>
+      <text>搜索菜谱</text>
+    </view>
+  </view>
+
+  <view class="main-content">
+    <scroll-view class="category-sidebar" scroll-y="true" scroll-into-view="{{scrollToCategory}}">
+      <view
+        wx:for="{{categories}}"
+        wx:key="name"
+        id="cat-{{index}}"
+        class="category-item {{currentCategory === item.name ? 'active' : ''}}"
+        bindtap="selectCategory"
+        data-index="{{index}}"
+        data-name="{{item.name}}">
+        <text class="category-icon">{{item.icon}}</text>
+        <text class="category-text">{{item.name}}</text>
+        <text class="category-count">{{item.count}}</text>
+      </view>
+    </scroll-view>
+
+    <scroll-view
+      class="recipe-list"
+      scroll-y="true"
+      scroll-top="{{scrollTop}}"
+      bindscrolltolower="loadMore"
+      enhanced="true"
+      show-scrollbar="false">
+      <view class="section-header" id="section-{{currentCategoryIndex}}">
+        <text class="section-title">{{currentCategory}}</text>
+        <text class="section-count">共 {{recipes.length}} 道菜</text>
+      </view>
+
+      <view class="recipe-card" wx:for="{{recipes}}" wx:key="_id" bindtap="goToDetail" data-id="{{item._id}}">
+        <image class="recipe-image" src="{{item.coverImage || (item.imageFileIDs && item.imageFileIDs[0]) || '/images/default-goods-image.png'}}" mode="aspectFill"></image>
+        <view class="recipe-info">
+          <text class="recipe-name">{{item.name}}</text>
+          <view class="recipe-meta">
+            <view class="meta-item">
+              <text class="meta-icon">⏱</text>
+              <text>{{item.cookTime || '-'}}分钟</text>
+            </view>
+            <view class="meta-item">
+              <text class="meta-icon">⭐</text>
+              <text>{{item.difficulty || '-'}}</text>
+            </view>
+            <view class="meta-item">
+              <text class="meta-icon">👥</text>
+              <text>{{item.servings || '-'}}人份</text>
+            </view>
+          </view>
+          <view class="recipe-tags">
+            <text class="tag" wx:for="{{item.tags}}" wx:if="{{index < 3}}" wx:key="*this">#{{item}}</text>
+          </view>
+          <view class="recipe-bottom">
+            <view class="rating-info">
+              <text class="rating-value">{{item.rating || '-'}}</text>
+              <text class="rating-star">★</text>
+              <text class="rating-count">({{item.ratingCount || 0}})</text>
+            </view>
+            <view class="like-info">
+              <text>❤️</text>
+              <text>{{item.likeCount || 0}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="loading-more" wx:if="{{loading}}">
+        <text>加载中...</text>
+      </view>
+
+      <view class="no-more" wx:if="{{!hasMore && recipes.length > 0}}">
+        <text>— 已经到底了 —</text>
+      </view>
+
+      <view class="empty-state" wx:if="{{!loading && recipes.length === 0}}">
+        <text class="empty-emoji">🍳</text>
+        <text class="empty-text">该分类暂无菜谱</text>
+        <text class="empty-hint">敬请期待更多美味</text>
+      </view>
+    </scroll-view>
+  </view>
+</view>

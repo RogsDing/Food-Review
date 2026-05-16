@@ -1,0 +1,130 @@
+<view class="container">
+  <form bindsubmit="checkLoginAndSubmit" bindreset="formReset">
+    <view class="form-section">
+      <view class="form-item">
+        <text class="form-label">店铺名称</text>
+        <input class="form-input" name="shopName" placeholder="请输入店铺名称" value="{{shopName}}" bindinput="onShopNameInput" />
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">地区</text>
+        <view class="area-selector">
+          <picker mode="multiSelector" bindchange="bindRegionChange" bindcolumnchange="bindRegionColumnChange" value="{{regionIndex}}" range="{{regionOptions}}">
+            <view class="picker-input">
+              {{province && city ? province + ' ' + city : '请选择地区'}}
+            </view>
+          </picker>
+          <button class="location-btn" bindtap="getLocation">
+            <text class="location-icon">📍</text>
+          </button>
+        </view>
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">探店日期</text>
+        <picker mode="date" bindchange="bindDateChange" value="{{diningTime}}" start="2023-01-01" end="{{today}}">
+          <view class="picker-input">
+            {{diningTime || '请选择探店日期'}}
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">消费金额</text>
+        <input type="number" placeholder="请输入消费金额" bindinput="onExpenseInput" value="{{expense}}" class="form-input" />
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">消费人数</text>
+        <input type="number" placeholder="请输入消费人数" bindinput="onPeopleInput" value="{{people}}" class="form-input" />
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">评分</text>
+        <view class="rating-container">
+          <view class="stars-display">
+            <text wx:for="{{5}}" wx:key="*this" class="star-icon {{index < ratingFloor ? 'active' : (index < rating ? 'half' : '')}}">★</text>
+            <text class="rating-value">{{rating}}</text>
+          </view>
+          <view class="slider-container">
+            <text class="slider-label">0.0</text>
+            <slider class="rating-slider" 
+                    value="{{rating}}" 
+                    min="0" 
+                    max="5" 
+                    step="0.1" 
+                    bindchange="handleSliderChange" 
+                    bindchanging="handleSliderChanging" />
+            <text class="slider-label">5.0</text>
+          </view>
+          <text class="slider-hint">拖动可精确到0.1分</text>
+        </view>
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">评价内容</text>
+        <textarea class="form-textarea" name="content" placeholder="请输入您的评价" value="{{content}}" />
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">类别 <text class="required">*</text></text>
+        <view class="category-tags">
+          <view wx:for="{{categories}}" wx:key="name" 
+                class="category-tag {{selectedCategory === item.name ? 'selected' : ''}}" 
+                bindtap="selectCategory" 
+                data-category="{{item.name}}">
+            <text class="category-icon">{{item.icon}}</text>
+            <text class="category-text">{{item.name}}</text>
+          </view>
+        </view>
+        <text wx:if="{{!selectedCategory}}" class="category-hint">请选择一个类别</text>
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">添加图片</text>
+        <view class="image-upload">
+          <view class="upload-item" bindtap="chooseImage">+</view>
+          <view wx:for="{{images}}" wx:key="*this" class="uploaded-image">
+            <image src="{{item}}" mode="aspectFill" />
+            <view class="delete-image" data-index="{{index}}" bindtap="deleteImage">×</view>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <button form-type="submit" class="submit-btn">{{isEdit ? '更新点评' : '提交点评'}}</button>
+  </form>
+
+  <view wx:if="{{showShopHistory}}" class="shop-history-modal" bindtap="closeShopHistory">
+    <view class="shop-history-content" catchtap="catchTap">
+      <view class="shop-history-header">
+        <text class="shop-history-emoji">🔥</text>
+        <text class="shop-history-title">你已经来过 {{shopHistoryData.shopName}} {{shopHistoryData.count}} 次了！</text>
+      </view>
+      <view class="shop-history-last">
+        <text class="shop-history-label">上次点评</text>
+        <view class="shop-history-info">
+          <text class="shop-history-rating">⭐ {{shopHistoryData.lastReview.rating}}分</text>
+          <text class="shop-history-time">{{shopHistoryData.lastReview.diningTime || '未记录日期'}}</text>
+          <text class="shop-history-content-preview">{{shopHistoryData.lastReview.content}}</text>
+        </view>
+      </view>
+      <view class="shop-history-compare">
+        <text class="shop-history-compare-title">这次感觉如何？</text>
+        <view class="shop-history-options">
+          <view wx:for="{{compareOptions}}" wx:key="value"
+                class="compare-option {{selectedCompare === item.value ? 'active' : ''}}"
+                bindtap="selectCompareOption"
+                data-value="{{item.value}}">
+            <text class="compare-icon">{{item.icon}}</text>
+            <text class="compare-text">{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="shop-history-actions">
+        <button class="shop-history-btn cancel" bindtap="closeShopHistory">取消</button>
+        <button class="shop-history-btn confirm" bindtap="confirmShopHistory">继续发布</button>
+      </view>
+    </view>
+  </view>
+</view>

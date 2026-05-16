@@ -1,0 +1,73 @@
+<view class="container">
+  <view class="city-header">
+    <view class="city-info">
+      <text class="city-icon">📍</text>
+      <text class="city-name">{{city}}</text>
+    </view>
+  </view>
+
+  <view class="stats-card">
+    <view class="stat-item">
+      <text class="stat-value">{{reviews.length}}</text>
+      <text class="stat-label">点评</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-value">{{totalShops}}</text>
+      <text class="stat-label">店铺</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-value">⭐{{avgRating}}</text>
+      <text class="stat-label">均分</text>
+    </view>
+  </view>
+
+  <view class="review-list" wx:if="{{reviews.length > 0}}">
+    <view class="review-item" wx:for="{{reviews}}" wx:key="_id" bindtap="goToDetail" data-id="{{item._id}}">
+      <view class="review-top">
+        <view class="shop-info">
+          <text class="shop-name">{{item.shopName}}</text>
+          <text class="shop-category">{{item.category || '美食'}}</text>
+        </view>
+        <view class="rating-badge">
+          <text class="rating-value">{{item.rating}}</text>
+          <text class="rating-star">★</text>
+        </view>
+      </view>
+
+      <view class="review-content" wx:if="{{item.content}}">{{item.content}}</view>
+
+      <view class="review-images" wx:if="{{item.imageFileIDs && item.imageFileIDs.length > 0}}">
+        <image 
+          wx:for="{{item.imageFileIDs}}" 
+          wx:for-item="imgUrl"
+          wx:key="*this"
+          src="{{imgUrl}}" 
+          mode="aspectFill"
+          class="review-image"
+          wx:if="{{index < 3}}"
+        ></image>
+        <view class="more-image-count" wx:if="{{item.imageFileIDs.length > 3}}">
+          <text>+{{item.imageFileIDs.length - 3}}</text>
+        </view>
+      </view>
+
+      <view class="review-bottom">
+        <view class="review-meta">
+          <text class="meta-tag">{{item.category || '美食'}}</text>
+        </view>
+        <view class="review-time-wrap">
+          <text class="review-time">{{item.formattedTime}}</text>
+          <text class="visit-count" wx:if="{{item.visitCount > 1}}">{{item.visitCount > 10 ? item.visitCount : (item.visitCount === 2 ? '二' : item.visitCount === 3 ? '三' : item.visitCount === 4 ? '四' : item.visitCount === 5 ? '五' : item.visitCount)}}刷</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty-state" wx:else>
+    <text class="empty-emoji">🗺️</text>
+    <text class="empty-text">该城市暂无点评记录</text>
+    <text class="empty-hint">快去发布第一条{{city}}的美食点评吧！</text>
+  </view>
+</view>

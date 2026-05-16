@@ -1,0 +1,89 @@
+<view class="container">
+  <view class="profile-card">
+    <view class="profile-header">
+      <text class="profile-emoji">🏪</text>
+      <text class="profile-shop-name">{{shopName}}</text>
+    </view>
+
+    <view class="profile-stats">
+      <view class="stat-item">
+        <text class="stat-label">综合评分</text>
+        <view class="stat-rating">
+          <text class="stat-rating-value">{{avgRating}}</text>
+          <text class="stat-rating-unit">/ 5.0</text>
+        </view>
+        <text class="stat-count">{{reviewCount}}次点评</text>
+      </view>
+
+      <view class="stat-item" wx:if="{{reviewCount > 1}}">
+        <text class="stat-label">评分趋势</text>
+        <view class="rating-trend">
+          <text class="{{ratingTrend === 'up' ? 'trend-up' : (ratingTrend === 'down' ? 'trend-down' : 'trend-same')}}">
+            {{ratingTrend === 'up' ? '📈 越来越好' : (ratingTrend === 'down' ? '📉 有所下滑' : '➡️ 保持稳定')}}
+          </text>
+        </view>
+      </view>
+    </view>
+
+    <view class="profile-info-grid">
+      <view class="info-item">
+        <text class="info-value">{{firstVisitTime}}</text>
+        <text class="info-label">首次探访</text>
+      </view>
+      <view class="info-item">
+        <text class="info-value">{{lastVisitTime}}</text>
+        <text class="info-label">最近一次</text>
+      </view>
+      <view class="info-item">
+        <text class="info-value badge-text">{{badgeInfo.name}}</text>
+        <text class="info-label">回头客等级</text>
+      </view>
+      <view class="info-item">
+        <text class="info-value">¥{{totalExpense || '--'}}</text>
+        <text class="info-label">总消费</text>
+      </view>
+    </view>
+
+    <view class="profile-badge" style="background: linear-gradient(135deg, {{badgeInfo.color1}} 0%, {{badgeInfo.color2}} 100%);">
+      <text class="badge-icon">{{badgeInfo.icon}}</text>
+      <view class="badge-info">
+        <text class="badge-title">{{badgeInfo.title}}</text>
+        <text class="badge-desc">{{badgeInfo.desc}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="timeline-section">
+    <view class="timeline-header">
+      <text class="timeline-title">探店时间线</text>
+    </view>
+
+    <view class="timeline-list" wx:if="{{reviews.length > 0}}">
+      <view class="timeline-item" wx:for="{{reviews}}" wx:key="_id">
+        <view class="timeline-dot {{index === 0 ? 'latest' : ''}}">
+          <text class="visit-count-tag">{{item.visitCount || (index + 1)}}</text>
+        </view>
+        <view class="timeline-content">
+          <view class="timeline-top">
+            <text class="timeline-rating">⭐ {{item.rating}}分</text>
+            <text class="timeline-time">{{item.diningTime || item.createTime}}</text>
+          </view>
+          <text class="timeline-content-text">{{item.content}}</text>
+          <view class="timeline-images" wx:if="{{item.imageFileIDs && item.imageFileIDs.length > 0}}">
+            <image wx:for="{{item.imageFileIDs}}" wx:for-item="imgUrl" wx:key="*this"
+                   src="{{imgUrl}}"
+                   mode="aspectFill"
+                   class="timeline-image"
+                   bindtap="previewImage"
+                   data-images="{{item.imageFileIDs}}"
+                   data-index="{{index}}" />
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="timeline-empty" wx:else>
+      <text>暂无探店记录</text>
+    </view>
+  </view>
+</view>

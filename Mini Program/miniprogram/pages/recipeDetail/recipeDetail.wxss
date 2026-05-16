@@ -1,0 +1,313 @@
+.container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding-bottom: 120rpx;
+}
+
+.cover-swiper {
+  width: 100%;
+  height: 500rpx;
+}
+
+.cover-image {
+  width: 100%;
+  height: 100%;
+}
+
+.cover-placeholder {
+  width: 100%;
+  height: 500rpx;
+  background-color: #eee;
+}
+
+.info-card {
+  margin: -40rpx 20rpx 0;
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  box-shadow: 0 4rpx 16rpx rgba(255, 107, 0, 0.1);
+  position: relative;
+  z-index: 10;
+}
+
+.info-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16rpx;
+}
+
+.recipe-name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #333;
+  flex: 1;
+  line-height: 1.3;
+}
+
+.rating-box {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  background-color: #fff8f3;
+  padding: 8rpx 16rpx;
+  border-radius: 12rpx;
+  flex-shrink: 0;
+}
+
+.rating-value {
+  font-size: 30rpx;
+  color: #ff6b00;
+  font-weight: 700;
+}
+
+.rating-star {
+  font-size: 26rpx;
+  color: #ff6b00;
+}
+
+.meta-row {
+  display: flex;
+  gap: 24rpx;
+  margin-bottom: 14rpx;
+  flex-wrap: wrap;
+}
+
+.meta-tag {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  font-size: 24rpx;
+  color: #666;
+  background-color: #f8f8f8;
+  padding: 6rpx 14rpx;
+  border-radius: 8rpx;
+}
+
+.meta-icon {
+  font-size: 22rpx;
+}
+
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-bottom: 16rpx;
+}
+
+.tag {
+  font-size: 22rpx;
+  color: #ff6b00;
+  background-color: #fff8f3;
+  padding: 6rpx 14rpx;
+  border-radius: 8rpx;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 16rpx;
+  border-top: 2rpx solid #f5f5f5;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-num {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 600;
+}
+
+.stat-label {
+  display: block;
+  font-size: 20rpx;
+  color: #999;
+  margin-top: 4rpx;
+}
+
+.section {
+  margin: 20rpx;
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #333;
+}
+
+.step-count {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.group-list {
+  padding-left: 4rpx;
+}
+
+.group {
+  margin-bottom: 20rpx;
+}
+
+.group:last-child {
+  margin-bottom: 0;
+}
+
+.group-name {
+  font-size: 26rpx;
+  color: #ff6b00;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+  padding-left: 8rpx;
+  border-left: 4rpx solid #ff6b00;
+}
+
+.item-list {
+  padding-left: 12rpx;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  padding: 8rpx 0;
+}
+
+.item-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background-color: #ddd;
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.item-name {
+  font-size: 26rpx;
+  color: #555;
+  flex: 1;
+}
+
+.item-amount {
+  font-size: 24rpx;
+  color: #999;
+  margin-left: 16rpx;
+}
+
+.step-list {
+  padding-left: 4rpx;
+}
+
+.step {
+  display: flex;
+  margin-bottom: 32rpx;
+}
+
+.step:last-child {
+  margin-bottom: 0;
+}
+
+.step-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 60rpx;
+  flex-shrink: 0;
+}
+
+.step-num {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-line {
+  width: 3rpx;
+  flex: 1;
+  background-color: #ffe8d9;
+  margin-top: 8rpx;
+}
+
+.step-right {
+  flex: 1;
+  padding-left: 20rpx;
+}
+
+.step-desc {
+  font-size: 28rpx;
+  color: #444;
+  line-height: 1.7;
+  margin-bottom: 12rpx;
+}
+
+.step-image {
+  width: 100%;
+  height: 300rpx;
+  border-radius: 12rpx;
+}
+
+.tips-section {
+  border: 2rpx dashed #ffd5b3;
+  background-color: #fffbf7;
+}
+
+.tips-content {
+  padding: 16rpx;
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.7;
+}
+
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 20rpx;
+  padding: 16rpx 28rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+  background-color: #fff;
+  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.action-btn {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 500;
+  border: none;
+}
+
+.like-btn {
+  background-color: #fff8f3;
+  color: #ff6b00;
+}
+
+.share-btn {
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  color: #fff;
+}

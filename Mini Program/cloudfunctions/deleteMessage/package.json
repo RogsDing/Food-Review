@@ -1,0 +1,9 @@
+{
+  "name": "deleteMessage",
+  "version": "1.0.0",
+  "description": "删除留言",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

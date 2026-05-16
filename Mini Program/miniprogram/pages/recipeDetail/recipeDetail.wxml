@@ -1,0 +1,117 @@
+<view class="container">
+  <swiper class="cover-swiper" indicator-dots="true" autoplay="true" interval="4000" circular="true" wx:if="{{recipe.imageFileIDs && recipe.imageFileIDs.length > 0}}">
+    <swiper-item wx:for="{{recipe.imageFileIDs}}" wx:key="index" bindtap="previewImage" data-url="{{item}}">
+      <image src="{{item}}" mode="aspectFill" class="cover-image"></image>
+    </swiper-item>
+  </swiper>
+
+  <view class="cover-placeholder" wx:else bindtap="previewImage">
+    <image src="{{recipe.coverImage || '/images/default-goods-image.png'}}" mode="aspectFill" class="cover-image"></image>
+  </view>
+
+  <view class="info-card">
+    <view class="info-top">
+      <text class="recipe-name">{{recipe.name}}</text>
+      <view class="rating-box">
+        <text class="rating-value">{{recipe.rating || '-'}}</text>
+        <text class="rating-star">★</text>
+      </view>
+    </view>
+
+    <view class="meta-row">
+      <view class="meta-tag">
+        <text class="meta-icon">⏱</text>
+        <text>{{recipe.cookTime || '-'}}分钟</text>
+      </view>
+      <view class="meta-tag">
+        <text class="meta-icon">⭐</text>
+        <text>难度 {{difficultyStars}}</text>
+      </view>
+      <view class="meta-tag">
+        <text class="meta-icon">👥</text>
+        <text>{{recipe.servings || '-'}}人份</text>
+      </view>
+    </view>
+
+    <view class="tags-row" wx:if="{{recipe.tags && recipe.tags.length > 0}}">
+      <text class="tag" wx:for="{{recipe.tags}}" wx:key="*this">#{{item}}</text>
+    </view>
+
+    <view class="stats-row">
+      <view class="stat">
+        <text class="stat-num">{{recipe.viewCount || 0}}</text>
+        <text class="stat-label">浏览</text>
+      </view>
+      <view class="stat">
+        <text class="stat-num">{{recipe.likeCount || 0}}</text>
+        <text class="stat-label">喜欢</text>
+      </view>
+      <view class="stat">
+        <text class="stat-num">{{recipe.ratingCount || 0}}</text>
+        <text class="stat-label">评价</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{ingredientGroups && ingredientGroups.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">🥬 食材清单</text>
+    </view>
+    <view class="group-list">
+      <view class="group" wx:for="{{ingredientGroups}}" wx:key="type">
+        <text class="group-name">{{item.type}}</text>
+        <view class="item-list">
+          <view class="item" wx:for="{{item.items}}" wx:key="name">
+            <text class="item-dot"></text>
+            <text class="item-name">{{item.name}}</text>
+            <text class="item-amount">{{item.amount}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{recipe.steps && recipe.steps.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">👨‍🍳 做法步骤</text>
+      <text class="step-count">共 {{recipe.steps.length}} 步</text>
+    </view>
+    <view class="step-list">
+      <view class="step" wx:for="{{recipe.steps}}" wx:key="order">
+        <view class="step-left">
+          <view class="step-num">{{item.order || index + 1}}</view>
+          <view class="step-line" wx:if="{{index < recipe.steps.length - 1}}"></view>
+        </view>
+        <view class="step-right">
+          <text class="step-desc">{{item.description}}</text>
+          <image
+            wx:if="{{item.imageFileID}}"
+            src="{{item.imageFileID}}"
+            mode="aspectFill"
+            class="step-image"
+            bindtap="previewImage"
+            data-url="{{item.imageFileID}}"
+          ></image>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section tips-section" wx:if="{{recipe.tips}}">
+    <view class="section-header">
+      <text class="section-title">💡 小贴士</text>
+    </view>
+    <view class="tips-content">
+      <text>{{recipe.tips}}</text>
+    </view>
+  </view>
+
+  <view class="bottom-bar">
+    <button class="action-btn like-btn" bindtap="toggleLike">
+      <text>{{isLiked ? '❤️' : '🤍'}} {{recipe.likeCount || 0}}</text>
+    </button>
+    <button class="action-btn share-btn" open-type="share">
+      <text>📤 分享</text>
+    </button>
+  </view>
+</view>
