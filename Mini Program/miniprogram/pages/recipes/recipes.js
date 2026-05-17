@@ -28,6 +28,16 @@ Page({
     this.loadRecipes()
   },
 
+  onShow: function () {
+    wx.showModal({
+      title: '温馨提示',
+      content: '该功能目前为静态数据，等待后续开发',
+      showCancel: false,
+      confirmText: '我知道了',
+      confirmColor: '#FF6B35'
+    })
+  },
+
   onPullDownRefresh: function () {
     this.setData({ page: 0, hasMore: true })
     this.loadCategoriesCount()
